@@ -1,0 +1,152 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800;9..144,900&family=Nunito:wght@400;500;600;700;800;900&family=Caveat:wght@500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Fraunces", "Georgia", serif;
+  --font-body: "Nunito", system-ui, -apple-system, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", cursive;
+}
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background: #fffcf4;
+    color: #1f2a37;
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #fbf4e3;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #ffd23f;
+    border-radius: 999px;
+    border: 2px solid #fbf4e3;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #f5b800;
+  }
+}
+
+@layer components {
+  .hand {
+    font-family: var(--font-hand);
+    font-weight: 600;
+  }
+
+  .squiggle {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 8'><path d='M0,4 Q10,0 20,4 T40,4 T60,4 T80,4' stroke='%23FFD23F' stroke-width='3' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat: repeat-x;
+    background-position: 0 100%;
+    background-size: 80px 8px;
+    padding-bottom: 6px;
+  }
+
+  .starry {
+    background-image: radial-gradient(circle at 12% 18%, #ffe27a 2px, transparent 3px),
+      radial-gradient(circle at 78% 32%, #ff9e7b 2.5px, transparent 3.5px),
+      radial-gradient(circle at 24% 78%, #8fd4ac 2px, transparent 3px),
+      radial-gradient(circle at 88% 86%, #92cdf8 2.5px, transparent 3.5px);
+  }
+
+  .photo-ph {
+    background: linear-gradient(135deg, #92cdf8, #ffe27a);
+    position: relative;
+    overflow: hidden;
+  }
+  .photo-ph::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 30% 35%, rgba(255, 255, 255, 0.5) 0, transparent 40%),
+      radial-gradient(circle at 75% 70%, rgba(255, 255, 255, 0.3) 0, transparent 35%);
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 24px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 16px;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+    white-space: nowrap;
+    border: none;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+  .btn-primary {
+    background: #1f2a37;
+    color: #fffcf4;
+    box-shadow: 0 8px 24px rgba(31, 42, 55, 0.08), 0 2px 6px rgba(31, 42, 55, 0.05);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 24px 48px rgba(31, 42, 55, 0.12), 0 6px 16px rgba(31, 42, 55, 0.06);
+  }
+  .btn-sun {
+    background: #ffd23f;
+    color: #1f2a37;
+    box-shadow: 0 12px 32px rgba(255, 210, 63, 0.35);
+  }
+  .btn-whatsapp {
+    background: #25d366;
+    color: white;
+    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.35);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: #1f2a37;
+    border: 2px solid #1f2a37;
+  }
+
+  .card {
+    background: white;
+    border-radius: 28px;
+    box-shadow: 0 2px 6px rgba(31, 42, 55, 0.06), 0 1px 2px rgba(31, 42, 55, 0.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
