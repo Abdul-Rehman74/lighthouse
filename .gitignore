@@ -141,3 +141,11 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# design-sync build artifacts
+.ds-sync/
+ds-bundle/
+dist-tailwind.css
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules

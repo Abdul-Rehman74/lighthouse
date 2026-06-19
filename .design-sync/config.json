@@ -1,0 +1,14 @@
+{
+  "projectId": "01aabf57-2b9e-4e19-8450-b813602cf3ba",
+  "shape": "package",
+  "pkg": "lighthouse-daycare",
+  "globalName": "lighthouseDaycare",
+  "tsconfig": "tsconfig.json",
+  "srcDir": "src/components",
+  "cssEntry": "dist-tailwind.css",
+  "runtimeFontPrefixes": ["Fraunces", "Nunito", "Caveat"],
+  "readmeHeader": ".design-sync/conventions.md",
+  "libOverrides": {
+    "bundle.mjs": "Next.js shims for next/link, next/image, next/navigation, next/font + process shim for bundled next runtime code"
+  }
+}
