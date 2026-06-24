@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800;9..144,900&family=Nunito:wght@400;500;600;700;800;900&family=Caveat:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800;9..144,900&family=Nunito:wght@400;500;600;700;800;900&family=Caveat:wght@500;600;700&family=Fredoka:wght@500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -65,6 +65,10 @@
   .hand {
     font-family: var(--font-hand);
     font-weight: 600;
+  }
+
+  .brand-wordmark {
+    font-family: "Fredoka", "Nunito", system-ui, sans-serif;
   }
 
   .squiggle {
@@ -142,11 +146,117 @@
   }
 }
 
+/* ---- playful cursor sparkles (particles appended to <body>) ---- */
+.spark {
+  position: fixed;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform, opacity;
+  animation: sparkPop 0.9s ease-out forwards;
+}
+@keyframes sparkPop {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1) rotate(var(--sr, 60deg));
+  }
+}
+
+/* ---- hero floating balloons + study objects ---- */
+.balloon {
+  position: absolute;
+  width: var(--bw, 44px);
+  aspect-ratio: 0.82;
+  background: var(--bc, #f47a4f);
+  border-radius: 50% 50% 49% 49% / 56% 56% 44% 44%;
+  box-shadow: inset -6px -7px 0 rgba(0, 0, 0, 0.06);
+  z-index: 2;
+  animation: balloonfloat var(--d, 5.5s) ease-in-out infinite;
+  animation-delay: var(--dl, 0s);
+  will-change: transform;
+}
+.balloon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 98%;
+  width: 7px;
+  height: 6px;
+  background: var(--bc, #f47a4f);
+  transform: translateX(-50%) rotate(45deg);
+}
+.balloon::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 1.5px;
+  height: 36px;
+  margin-top: 5px;
+  background: rgba(31, 42, 55, 0.28);
+  transform: translateX(-50%);
+}
+@keyframes balloonfloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--r, -4deg));
+  }
+  50% {
+    transform: translateY(-15px) rotate(calc(var(--r, -4deg) * -0.6));
+  }
+}
+.study {
+  position: absolute;
+  z-index: 2;
+  animation: studyfloat var(--d, 6s) ease-in-out infinite;
+  animation-delay: var(--dl, 0s);
+  will-change: transform;
+  filter: drop-shadow(0 7px 9px rgba(31, 42, 55, 0.14));
+}
+@keyframes studyfloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--r, 0deg));
+  }
+  50% {
+    transform: translateY(-14px) rotate(calc(var(--r, 0deg) + var(--rs, 6deg)));
+  }
+}
+
+/* ---- scroll reveal (entry animation) ---- */
+.rv {
+  opacity: 0;
+  transform: translateY(38px);
+  transition: opacity 0.72s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.72s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: opacity, transform;
+}
+.rv-in {
+  opacity: 1;
+  transform: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+  .spark {
+    display: none !important;
+  }
+  .balloon,
+  .study {
+    animation: none !important;
+  }
+  .rv {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

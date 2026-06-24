@@ -40,10 +40,11 @@ export const siteConfig = {
   ],
   nav: [
     { id: "home", label: "Home", href: "/" },
-    { id: "about", label: "About", href: "/about" },
+    { id: "learning-lounge", label: "Learning Lounge", href: "/learning-lounge" },
     { id: "gallery", label: "Gallery", href: "/gallery" },
     { id: "packages", label: "Packages", href: "/packages" },
     { id: "contact", label: "Contact", href: "/contact" },
+    { id: "about", label: "About", href: "/about" },
   ] as const,
 } as const;
 

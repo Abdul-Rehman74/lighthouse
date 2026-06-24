@@ -2,9 +2,10 @@ import Link from "next/link";
 import { Button } from "@/components/atoms/Button";
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
-import { siteConfig } from "@/lib/site-config";
+import { getSiteSettings } from "@/lib/site-settings";
 
-export function PackagesCTA() {
+export async function PackagesCTA() {
+  const settings = await getSiteSettings();
   return (
     <section className="py-14">
       <Container>
@@ -22,7 +23,7 @@ export function PackagesCTA() {
               <Link href="/contact">Book a free trial →</Link>
             </Button>
             <Button asChild variant="whatsapp">
-              <a href={siteConfig.whatsapp.href} target="_blank" rel="noreferrer">
+              <a href={settings.phoneHref} target="_blank" rel="noreferrer">
                 💬 WhatsApp us
               </a>
             </Button>

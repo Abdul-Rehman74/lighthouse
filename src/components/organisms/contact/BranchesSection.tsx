@@ -2,9 +2,11 @@ import { Button } from "@/components/atoms/Button";
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { siteConfig } from "@/lib/site-config";
+import { getSiteSettings } from "@/lib/site-settings";
 import { MapPin, Phone, Clock } from "lucide-react";
 
-export function BranchesSection() {
+export async function BranchesSection() {
+  const settings = await getSiteSettings();
   return (
     <section className="py-14">
       <Container>
@@ -44,7 +46,7 @@ export function BranchesSection() {
                       </a>
                     </Button>
                     <Button asChild variant="whatsapp" size="sm">
-                      <a href={siteConfig.whatsapp.href} target="_blank" rel="noreferrer">
+                      <a href={settings.phoneHref} target="_blank" rel="noreferrer">
                         💬 WhatsApp
                       </a>
                     </Button>

@@ -1,9 +1,10 @@
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
-import { siteConfig } from "@/lib/site-config";
+import { getSiteSettings } from "@/lib/site-settings";
 import { Instagram, Facebook } from "lucide-react";
 
-export function SocialSection() {
+export async function SocialSection() {
+  const { social } = await getSiteSettings();
   return (
     <section className="py-10">
       <Container>
@@ -18,21 +19,21 @@ export function SocialSection() {
           </p>
           <div className="flex flex-wrap gap-3.5 justify-center mt-7">
             <a
-              href={siteConfig.social.instagram.href}
+              href={social.instagram.href}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2.5 px-5 py-3 rounded-full text-white font-bold text-sm shadow-soft-md hover:-translate-y-0.5 transition-transform"
               style={{ background: "linear-gradient(135deg, #f9ce34, #ee2a7b, #6228d7)" }}
             >
-              <Instagram size={18} /> {siteConfig.social.instagram.handle}
+              <Instagram size={18} /> {social.instagram.handle}
             </a>
             <a
-              href={siteConfig.social.facebook.href}
+              href={social.facebook.href}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2.5 px-5 py-3 rounded-full text-white font-bold text-sm shadow-soft-md bg-[#1877F2] hover:-translate-y-0.5 transition-transform"
             >
-              <Facebook size={18} /> {siteConfig.social.facebook.handle}
+              <Facebook size={18} /> {social.facebook.handle}
             </a>
           </div>
         </div>

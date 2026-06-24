@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/atoms/Button";
 import { FormField } from "@/components/atoms/FormField";
+import { DatePickerField } from "@/components/atoms/DatePickerField";
 import { submitTrialBooking } from "@/app/actions/booking";
 
 const initial = { name: "", age: "", date: "", phone: "" };
@@ -40,7 +41,12 @@ export function MiniTrialForm() {
           <FormField label="Parent's name" required value={data.name} onChange={set("name")} placeholder="Ayesha Khan" />
           <div className="grid grid-cols-2 gap-3">
             <FormField label="Child's age" required value={data.age} onChange={set("age")} placeholder="14 mo" />
-            <FormField label="Date" required value={data.date} onChange={set("date")} placeholder="DD/MM" />
+            <DatePickerField
+              label="Date"
+              required
+              value={data.date}
+              onChange={(iso) => setData((d) => ({ ...d, date: iso }))}
+            />
           </div>
           <FormField
             label="WhatsApp number"

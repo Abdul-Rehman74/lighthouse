@@ -1,8 +1,10 @@
 import { Button } from "@/components/atoms/Button";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { siteConfig } from "@/lib/site-config";
+import { getSiteSettings } from "@/lib/site-settings";
 
-export function ContactInfoCard() {
+export async function ContactInfoCard() {
+  const settings = await getSiteSettings();
   return (
     <div className="flex flex-col gap-5">
       <div className="bg-ink-900 text-cream-50 rounded-[28px] p-8 relative overflow-hidden">
@@ -14,8 +16,8 @@ export function ContactInfoCard() {
           <Eyebrow color="text-sun-300">fastest reply</Eyebrow>
           <h3 className="text-2xl mt-1.5 mb-4">WhatsApp us</h3>
           <Button asChild variant="whatsapp" className="w-full justify-center" size="lg">
-            <a href={siteConfig.whatsapp.href} target="_blank" rel="noreferrer">
-              💬 {siteConfig.whatsapp.display}
+            <a href={settings.phoneHref} target="_blank" rel="noreferrer">
+              💬 {settings.phoneDisplay}
             </a>
           </Button>
           <p className="text-[13px] text-cream-50/70 mt-3.5 leading-relaxed">

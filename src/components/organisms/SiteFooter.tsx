@@ -3,6 +3,7 @@ import { Logo } from "@/components/atoms/Logo";
 import { SocialPill } from "@/components/atoms/SocialPill";
 import { Container } from "@/components/atoms/Container";
 import { siteConfig } from "@/lib/site-config";
+import { getSiteSettings } from "@/lib/site-settings";
 import { Clock, Instagram, Facebook, MessageCircle, MapPin } from "lucide-react";
 
 function FooterTitle({ children }: { children: React.ReactNode }) {
@@ -13,7 +14,8 @@ function FooterTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const settings = await getSiteSettings();
   return (
     <footer className="relative overflow-hidden bg-ink-900 text-cream-100 mt-14 md:mt-20">
       <div
@@ -33,9 +35,9 @@ export function SiteFooter() {
               {siteConfig.description}
             </p>
             <div className="flex gap-2.5 mt-5">
-              <SocialPill kind="whatsapp" href={siteConfig.whatsapp.href} />
-              <SocialPill kind="instagram" href={siteConfig.social.instagram.href} />
-              <SocialPill kind="facebook" href={siteConfig.social.facebook.href} />
+              <SocialPill kind="whatsapp" href={settings.phoneHref} />
+              <SocialPill kind="instagram" href={settings.social.instagram.href} />
+              <SocialPill kind="facebook" href={settings.social.facebook.href} />
             </div>
           </div>
 
@@ -71,28 +73,28 @@ export function SiteFooter() {
             <FooterTitle>Reach us</FooterTitle>
             <div className="flex flex-col gap-2.5 text-sm text-cream-50/70">
               <a
-                href={siteConfig.whatsapp.href}
+                href={settings.phoneHref}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 hover:text-cream-50 transition-colors"
               >
-                <MessageCircle size={16} /> WhatsApp {siteConfig.whatsapp.display}
+                <MessageCircle size={16} /> WhatsApp {settings.phoneDisplay}
               </a>
               <a
-                href={siteConfig.social.instagram.href}
+                href={settings.social.instagram.href}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 hover:text-cream-50 transition-colors"
               >
-                <Instagram size={16} /> {siteConfig.social.instagram.handle}
+                <Instagram size={16} /> {settings.social.instagram.handle}
               </a>
               <a
-                href={siteConfig.social.facebook.href}
+                href={settings.social.facebook.href}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 hover:text-cream-50 transition-colors"
               >
-                <Facebook size={16} /> {siteConfig.social.facebook.handle}
+                <Facebook size={16} /> {settings.social.facebook.handle}
               </a>
               <div className="flex items-center gap-2 mt-1">
                 <MapPin size={16} /> Islamabad · Rawalpindi
@@ -102,7 +104,12 @@ export function SiteFooter() {
         </div>
 
         <div className="border-t border-cream-50/15 pt-6 flex flex-col sm:flex-row justify-between gap-2 text-xs text-cream-50/50">
-          <div>© 2026 Lighthouse Daycare &amp; Montessori. All rights reserved.</div>
+          <div className="flex items-center gap-3">
+            <span>© 2026 {settings.name}. All rights reserved.</span>
+            <Link href="/admin" className="text-cream-50/40 hover:text-cream-50 transition-colors">
+              Admin
+            </Link>
+          </div>
           <div className="hand text-base text-sun-300">made with ✿ in the Twin Cities</div>
         </div>
       </Container>

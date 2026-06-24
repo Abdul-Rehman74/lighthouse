@@ -10,32 +10,37 @@ import { cn } from "@/lib/utils";
 const filters = ["All", "Play", "Learning", "Outdoor", "Meals", "Art", "Naps"] as const;
 type Filter = (typeof filters)[number];
 
-interface Photo {
-  s: Scene;
+interface Item {
+  src?: string;
+  scene?: Scene;
   cat: Filter;
-  c: string;
+  cap: string;
   r: number;
 }
 
-const photos: Photo[] = [
-  { s: "play", cat: "Play", c: "circle time", r: -2 },
-  { s: "art", cat: "Art", c: "paint day", r: 1 },
-  { s: "food", cat: "Meals", c: "snack o'clock", r: -1 },
-  { s: "outdoor", cat: "Outdoor", c: "garden visit", r: 2 },
-  { s: "learn", cat: "Learning", c: "so curious", r: -1 },
-  { s: "nap", cat: "Naps", c: "sweet dreams", r: 1.5 },
-  { s: "play", cat: "Play", c: "block tower!", r: 2 },
-  { s: "food", cat: "Meals", c: "lunch time", r: -1.5 },
-  { s: "art", cat: "Art", c: "masterpiece", r: 1 },
-  { s: "outdoor", cat: "Outdoor", c: "sun on our face", r: -1 },
-  { s: "learn", cat: "Learning", c: "first words", r: 2 },
-  { s: "play", cat: "Play", c: "dress-up", r: -1 },
-  { s: "art", cat: "Art", c: "finger paints", r: 1.5 },
-  { s: "outdoor", cat: "Outdoor", c: "big swing", r: -2 },
-  { s: "food", cat: "Meals", c: "fruit salad", r: 1 },
-  { s: "nap", cat: "Naps", c: "naptime", r: -1 },
-  { s: "learn", cat: "Learning", c: "shapes", r: 2 },
-  { s: "play", cat: "Play", c: "race!", r: -1.5 },
+/** Photos passed from the DB (admin-managed). */
+export interface GalleryPhoto {
+  src: string;
+  cat: string;
+  cap: string;
+}
+
+const rotations = [-2, 1, -1, 2, -1, 1.5, 2, -1.5, 1, -1, 2, -1, 1.5, -2, 1, -1, 2, -1.5];
+
+// Illustrated fallback shown only when no real photos have been uploaded yet.
+const placeholders: Item[] = [
+  { scene: "play", cat: "Play", cap: "circle time", r: -2 },
+  { scene: "art", cat: "Art", cap: "paint day", r: 1 },
+  { scene: "food", cat: "Meals", cap: "snack o'clock", r: -1 },
+  { scene: "outdoor", cat: "Outdoor", cap: "garden visit", r: 2 },
+  { scene: "learn", cat: "Learning", cap: "so curious", r: -1 },
+  { scene: "nap", cat: "Naps", cap: "sweet dreams", r: 1.5 },
+  { scene: "play", cat: "Play", cap: "block tower!", r: 2 },
+  { scene: "food", cat: "Meals", cap: "lunch time", r: -1.5 },
+  { scene: "art", cat: "Art", cap: "masterpiece", r: 1 },
+  { scene: "outdoor", cat: "Outdoor", cap: "sun on our face", r: -1 },
+  { scene: "learn", cat: "Learning", cap: "first words", r: 2 },
+  { scene: "play", cat: "Play", cap: "dress-up", r: -1 },
 ];
 
 const tapes = [
@@ -45,11 +50,24 @@ const tapes = [
   "rgba(95,179,240,0.55)",
 ];
 
-export function GalleryFilter() {
+export function GalleryFilter({ photos }: { photos?: GalleryPhoto[] }) {
   const [active, setActive] = useState<Filter>("All");
+
+  const items: Item[] = useMemo(() => {
+    if (photos && photos.length) {
+      return photos.map((p, i) => ({
+        src: p.src,
+        cat: (filters as readonly string[]).includes(p.cat) ? (p.cat as Filter) : "Play",
+        cap: p.cap || "",
+        r: rotations[i % rotations.length],
+      }));
+    }
+    return placeholders;
+  }, [photos]);
+
   const filtered = useMemo(
-    () => (active === "All" ? photos : photos.filter((p) => p.cat === active)),
-    [active]
+    () => (active === "All" ? items : items.filter((p) => p.cat === active)),
+    [active, items]
   );
 
   return (
@@ -75,7 +93,7 @@ export function GalleryFilter() {
           <AnimatePresence mode="popLayout">
             {filtered.map((p, i) => (
               <motion.div
-                key={`${p.s}-${p.c}-${i}`}
+                key={`${p.cat}-${p.cap}-${i}`}
                 layout
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -83,8 +101,9 @@ export function GalleryFilter() {
                 transition={{ duration: 0.3 }}
               >
                 <ScrapbookPhoto
-                  scene={p.s}
-                  caption={p.c}
+                  scene={p.scene}
+                  src={p.src}
+                  caption={p.cap}
                   rotate={p.r}
                   tapeColor={tapes[i % tapes.length]}
                   height={240}
@@ -93,6 +112,9 @@ export function GalleryFilter() {
             ))}
           </AnimatePresence>
         </motion.div>
+        {filtered.length === 0 && (
+          <p className="text-center text-ink-500 py-10">No photos in this category yet.</p>
+        )}
         <p className="text-[13px] text-ink-500 text-center mt-10">
           New photos uploaded by our teachers every week · Follow us on Instagram for daily updates
         </p>

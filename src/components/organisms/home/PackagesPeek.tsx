@@ -3,14 +3,21 @@ import { Button } from "@/components/atoms/Button";
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { cn } from "@/lib/utils";
+import { getPackages } from "@/lib/site-settings";
 
-const pkgs = [
-  { hours: "8 — 12", label: "Half day", sub: "Mornings + lunch", color: "#C8EBD7", rotate: -1, highlight: false },
-  { hours: "8 — 3", label: "School day", sub: "Most popular", color: "#FFD23F", rotate: 0, highlight: true },
-  { hours: "8 — 6", label: "Full day", sub: "For working parents", color: "#FFC9B6", rotate: 1, highlight: false },
-];
+const COLORS = ["#C8EBD7", "#FFC9B6", "#C9E7FF", "#FFE27A"];
+const ROTATE = [-1, 0, 1, -1, 1];
 
-export function PackagesPeek() {
+export async function PackagesPeek() {
+  const { packages } = await getPackages();
+  const pkgs = packages.map((p, i) => ({
+    hours: p.hours,
+    label: p.label,
+    sub: p.sub,
+    color: p.highlight ? "#FFD23F" : COLORS[i % COLORS.length],
+    rotate: ROTATE[i % ROTATE.length],
+    highlight: p.highlight,
+  }));
   return (
     <section className="pt-10 pb-20">
       <Container>

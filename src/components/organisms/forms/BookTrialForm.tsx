@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/atoms/Button";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { FormField, SelectField, TextAreaField } from "@/components/atoms/FormField";
+import { DatePickerField } from "@/components/atoms/DatePickerField";
 import { submitTrialBooking } from "@/app/actions/booking";
 
 const initial = {
@@ -70,7 +71,12 @@ export function BookTrialForm() {
       <FormField label="Parent's name" required value={data.name} onChange={set("name")} placeholder="e.g. Ayesha Khan" />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         <FormField label="Child's age" required value={data.age} onChange={set("age")} placeholder="e.g. 14 months" />
-        <FormField label="Preferred date" required value={data.date} onChange={set("date")} placeholder="DD / MM / YYYY" />
+        <DatePickerField
+          label="Preferred date"
+          required
+          value={data.date}
+          onChange={(iso) => setData((d) => ({ ...d, date: iso }))}
+        />
       </div>
       <FormField
         label="WhatsApp number"

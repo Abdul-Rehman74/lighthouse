@@ -3,13 +3,17 @@ import { PhotoPlaceholder, type Scene } from "@/components/atoms/PhotoPlaceholde
 
 export function ScrapbookPhoto({
   scene,
+  src,
   caption,
   rotate,
   tapeColor = "rgba(255, 210, 63, 0.6)",
   height = 240,
   className,
 }: {
-  scene: Scene;
+  /** Illustrated placeholder scene — used when no real photo `src` is provided. */
+  scene?: Scene;
+  /** Real uploaded photo URL/data-URL. Takes precedence over `scene`. */
+  src?: string;
   caption: string;
   rotate: number;
   tapeColor?: string;
@@ -30,7 +34,12 @@ export function ScrapbookPhoto({
         aria-hidden
       />
       <div className="overflow-hidden" style={{ height }}>
-        <PhotoPlaceholder scene={scene} className="w-full h-full" />
+        {src ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt={caption} className="w-full h-full object-cover" />
+        ) : (
+          <PhotoPlaceholder scene={scene ?? "play"} className="w-full h-full" />
+        )}
       </div>
       <div className="hand text-center mt-2.5 text-[20px]">{caption}</div>
     </div>

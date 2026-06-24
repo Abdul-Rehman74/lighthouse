@@ -3,19 +3,20 @@
 import { useState } from "react";
 import { siteConfig } from "@/lib/site-config";
 
-export function WhatsAppFab() {
+export function WhatsAppFab({ phoneHref = siteConfig.whatsapp.href }: { phoneHref?: string }) {
   const [hover, setHover] = useState(false);
   return (
     <a
-      href={siteConfig.whatsapp.href}
+      href={phoneHref}
       target="_blank"
       rel="noreferrer"
       aria-label="Chat with us on WhatsApp"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      className="fixed bottom-6 right-6 sm:bottom-7 sm:right-7 z-40 bg-[#25D366] text-white rounded-full flex items-center gap-2.5 cursor-pointer font-bold text-sm transition-all duration-300"
+      className="fixed bottom-6 right-6 sm:bottom-7 sm:right-7 z-40 bg-[#25D366] text-white rounded-full flex items-center cursor-pointer font-bold text-sm transition-all duration-300"
       style={{
         padding: hover ? "14px 22px 14px 18px" : "14px",
+        gap: hover ? 10 : 0,
         boxShadow: "0 12px 28px rgba(37, 211, 102, 0.45)",
       }}
     >

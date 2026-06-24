@@ -2,10 +2,11 @@ import Link from "next/link";
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { Button } from "@/components/atoms/Button";
-import { siteConfig } from "@/lib/site-config";
+import { getSiteSettings } from "@/lib/site-settings";
 import { MiniTrialForm } from "@/components/organisms/forms/MiniTrialForm";
 
-export function TrialCTA() {
+export async function TrialCTA() {
+  const settings = await getSiteSettings();
   return (
     <section className="py-16 md:py-24">
       <Container>
@@ -33,7 +34,7 @@ export function TrialCTA() {
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Button asChild variant="whatsapp">
-                <a href={siteConfig.whatsapp.href} target="_blank" rel="noreferrer">
+                <a href={settings.phoneHref} target="_blank" rel="noreferrer">
                   💬 WhatsApp us
                 </a>
               </Button>

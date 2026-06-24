@@ -4,17 +4,33 @@ import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { ScrapbookPhoto } from "@/components/molecules/ScrapbookPhoto";
 import type { Scene } from "@/components/atoms/PhotoPlaceholder";
+import { getHomePhotos } from "@/lib/site-settings";
 
-const items: { s: Scene; c: string; r: number; tape: string }[] = [
-  { s: "play", c: "circle time", r: -2, tape: "rgba(255, 210, 63, 0.6)" },
-  { s: "food", c: "snack o'clock", r: 1.5, tape: "rgba(255, 158, 123, 0.6)" },
-  { s: "art", c: "masterpiece", r: -1, tape: "rgba(95, 179, 240, 0.55)" },
-  { s: "outdoor", c: "garden!", r: 2, tape: "rgba(143, 212, 172, 0.6)" },
-  { s: "learn", c: "so curious", r: -1.5, tape: "rgba(255, 210, 63, 0.6)" },
-  { s: "nap", c: "sweet dreams", r: 2.5, tape: "rgba(255, 158, 123, 0.6)" },
+// Decorative fallback shown when the admin hasn't picked any home photos yet.
+const fallback: { s: Scene; c: string }[] = [
+  { s: "play", c: "circle time" },
+  { s: "food", c: "snack o'clock" },
+  { s: "art", c: "masterpiece" },
+  { s: "outdoor", c: "garden!" },
+  { s: "learn", c: "so curious" },
+  { s: "nap", c: "sweet dreams" },
 ];
 
-export function ScrapbookGrid() {
+// Cycled scrapbook styling (tilt + tape colour) applied to whatever fills the grid.
+const ROTATE = [-2, 1.5, -1, 2, -1.5, 2.5];
+const TAPE = [
+  "rgba(255, 210, 63, 0.6)",
+  "rgba(255, 158, 123, 0.6)",
+  "rgba(95, 179, 240, 0.55)",
+  "rgba(143, 212, 172, 0.6)",
+  "rgba(255, 210, 63, 0.6)",
+  "rgba(255, 158, 123, 0.6)",
+];
+
+export async function ScrapbookGrid() {
+  const homePhotos = await getHomePhotos();
+  const tiles = homePhotos.slice(0, 6);
+
   return (
     <section className="bg-cream-100 py-14 md:py-20">
       <Container>
@@ -28,9 +44,27 @@ export function ScrapbookGrid() {
           </Button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-12">
-          {items.map((it, i) => (
-            <ScrapbookPhoto key={i} scene={it.s} caption={it.c} rotate={it.r} tapeColor={it.tape} height={220} />
-          ))}
+          {tiles.length > 0
+            ? tiles.map((p, i) => (
+                <ScrapbookPhoto
+                  key={i}
+                  src={p.src}
+                  caption={p.cap || "at Lighthouse"}
+                  rotate={ROTATE[i % ROTATE.length]}
+                  tapeColor={TAPE[i % TAPE.length]}
+                  height={220}
+                />
+              ))
+            : fallback.map((it, i) => (
+                <ScrapbookPhoto
+                  key={i}
+                  scene={it.s}
+                  caption={it.c}
+                  rotate={ROTATE[i % ROTATE.length]}
+                  tapeColor={TAPE[i % TAPE.length]}
+                  height={220}
+                />
+              ))}
         </div>
       </Container>
     </section>

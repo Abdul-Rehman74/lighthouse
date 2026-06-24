@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { SiteNav } from "@/components/organisms/SiteNav";
-import { SiteFooter } from "@/components/organisms/SiteFooter";
-import { WhatsAppFab } from "@/components/organisms/WhatsAppFab";
 import { siteConfig } from "@/lib/site-config";
 
 export const metadata: Metadata = {
@@ -21,12 +18,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-cream-50 text-ink-900 font-body min-h-screen flex flex-col">
-        <SiteNav />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
-        <WhatsAppFab />
-      </body>
+      <body className="bg-cream-50 text-ink-900 font-body">{children}</body>
     </html>
   );
 }
