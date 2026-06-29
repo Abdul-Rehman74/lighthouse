@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { siteConfig } from "@/lib/site-config";
+import { TopProgressBar } from "@/components/effects/TopProgressBar";
 
 export const metadata: Metadata = {
   title: {
@@ -18,7 +19,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-cream-50 text-ink-900 font-body">{children}</body>
+      <body className="bg-cream-50 text-ink-900 font-body">
+        <TopProgressBar />
+        {children}
+      </body>
     </html>
   );
 }

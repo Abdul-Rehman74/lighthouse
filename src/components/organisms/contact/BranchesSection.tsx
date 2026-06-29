@@ -12,7 +12,7 @@ export async function BranchesSection() {
       <Container>
         <div className="text-center mb-10">
           <Eyebrow color="text-mint-400">our branches</Eyebrow>
-          <h2 className="text-3xl md:text-[44px] mt-1.5">Two locations across the Twin Cities.</h2>
+          <h2 className="text-3xl md:text-[44px] mt-1.5">Two branches in Rawalpindi.</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
           {siteConfig.branches.map((b, i) => (

@@ -110,7 +110,7 @@ export async function SiteFooter() {
               Admin
             </Link>
           </div>
-          <div className="hand text-base text-sun-300">made with ✿ in the Twin Cities</div>
+          <div className="hand text-base text-sun-300">made with ✿ in Rawalpindi</div>
         </div>
       </Container>
     </footer>

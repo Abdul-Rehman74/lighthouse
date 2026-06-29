@@ -49,7 +49,7 @@ export async function ScrapbookGrid() {
                 <ScrapbookPhoto
                   key={i}
                   src={p.src}
-                  caption={p.cap || "at Lighthouse"}
+                  caption={p.cap}
                   rotate={ROTATE[i % ROTATE.length]}
                   tapeColor={TAPE[i % TAPE.length]}
                   height={220}

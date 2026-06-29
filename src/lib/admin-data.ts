@@ -378,6 +378,25 @@ export async function reorderPhotos(orderedIds: string[]): Promise<void> {
   );
 }
 
+/**
+ * Set the exact set of photos shown on the home "Look at our day" strip in one
+ * shot: the given ids become `home: true`, every other photo becomes `home: false`.
+ * Used by the admin "Update home pictures" button so the selection is always in
+ * a known, consistent state (independent of individual toggle requests).
+ */
+export async function setHomePhotos(ids: string[]): Promise<void> {
+  const c = await col("photos");
+  const wanted = new Set(ids);
+  const docs = (await c.find({}, { projection: { home: 1 } }).toArray()) as any[];
+  await Promise.all(
+    docs.map((d) => {
+      const shouldHome = wanted.has(d._id.toString());
+      if (!!d.home === shouldHome) return Promise.resolve();
+      return c.updateOne({ _id: d._id }, { $set: { home: shouldHome } });
+    }),
+  );
+}
+
 /* ----------------------------- Testimonials ----------------------------- */
 
 export async function listTestimonials(): Promise<Testimonial[]> {

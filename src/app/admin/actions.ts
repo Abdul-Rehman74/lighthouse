@@ -18,6 +18,7 @@ import {
   updatePhoto,
   deletePhoto,
   reorderPhotos,
+  setHomePhotos,
   addTestimonial,
   updateTestimonial,
   deleteTestimonial,
@@ -102,6 +103,20 @@ export async function removePhoto(id: string): Promise<void> {
 export async function savePhotoOrder(orderedIds: string[]): Promise<void> {
   await requireSession();
   await reorderPhotos(orderedIds);
+  revalidatePath("/admin");
+  revalidatePath("/gallery");
+  revalidatePath("/");
+}
+
+/**
+ * Publish the exact set of photos chosen for the home "Look at our day" strip.
+ * Backs the admin "Update home pictures" button — re-syncs the whole selection
+ * and refreshes the home page, so it's reliable even if an individual toggle
+ * request was missed.
+ */
+export async function syncHomePhotos(homeIds: string[]): Promise<void> {
+  await requireSession();
+  await setHomePhotos(homeIds);
   revalidatePath("/admin");
   revalidatePath("/gallery");
   revalidatePath("/");

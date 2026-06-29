@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "Lighthouse Daycare & Montessori",
   tagline: "The brightest part of every day.",
   description:
-    "Twin Cities' favorite daycare and Montessori — caring for little ones from 2 months onwards since 2019.",
+    "Rawalpindi's favorite daycare and Montessori — caring for little ones from 2 months onwards since 2019.",
   whatsapp: {
     display: "+92 300 0000000",
     href: "https://wa.me/923000000000",
@@ -24,18 +24,22 @@ export const siteConfig = {
   },
   branches: [
     {
-      name: "Islamabad Branch",
-      address: "Sector F-10, Islamabad",
+      name: "Main Branch",
+      address: "Chaklala Scheme III, Rawalpindi",
       phone: "+92 300 0000001",
       hours: "Mon–Sat · 7am–6pm",
-      mapsHref: "https://maps.google.com/?q=Sector+F-10+Islamabad",
+      lat: 33.5869924,
+      lng: 73.0879666,
+      mapsHref: "https://maps.app.goo.gl/DBxV2xXUCUoQuvHD8",
     },
     {
-      name: "Rawalpindi Branch",
-      address: "Bahria Town Phase 4, Rawalpindi",
+      name: "Second Branch",
+      address: "Chaklala Scheme III, Rawalpindi",
       phone: "+92 300 0000002",
       hours: "Mon–Sat · 7am–6pm",
-      mapsHref: "https://maps.google.com/?q=Bahria+Town+Phase+4+Rawalpindi",
+      lat: 33.58638,
+      lng: 73.087296,
+      mapsHref: "https://maps.app.goo.gl/2awL9TLt2gVeewhs5",
     },
   ],
   nav: [

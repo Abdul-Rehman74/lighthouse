@@ -19,15 +19,16 @@ export function LearningLoungePeek() {
           <Star className="top-[120px] left-[6%]" color="#F47A4F" scale={0.85} />
 
           <div className="relative text-center max-w-[820px] mx-auto">
-            <Eyebrow color="text-coral-400">✯ new · learning lounge</Eyebrow>
+            <Eyebrow color="text-coral-400">✯ new at lighthouse</Eyebrow>
             <h2 className="text-4xl md:text-5xl lg:text-[64px] mt-3 leading-[0.98] font-black">
-              Because every child
+              Every child belongs at the
               <br />
-              learns <span className="text-coral-400">differently.</span>
+              <span className="text-coral-400">Learning Lounge.</span>
             </h2>
             <p className="text-lg md:text-[19px] mt-6 text-ink-700 leading-relaxed max-w-[580px] mx-auto">
-              A dedicated program alongside our Montessori &amp; daycare — gentle, inclusive
-              support woven right into the day, so every child belongs from the very first morning.
+              Because every child learns differently — a dedicated program alongside our Montessori
+              &amp; daycare, with gentle, inclusive support woven right into the day, so every child
+              belongs from the very first morning.
             </p>
           </div>
 

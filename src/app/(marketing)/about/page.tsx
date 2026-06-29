@@ -10,7 +10,7 @@ import { CTABanner } from "@/components/organisms/CTABanner";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Seven years of caring for the Twin Cities' little ones — meet the Lighthouse team, daily routine, and our values.",
+    "Seven years of caring for Rawalpindi's little ones — meet the Lighthouse team, daily routine, and our values.",
 };
 
 export default function AboutPage() {

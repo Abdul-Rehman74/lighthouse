@@ -231,6 +231,18 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
     actions.savePhoto(id, { home: next }).catch(() => showToast("Couldn't update"));
     showToast(next ? "Added to home page" : "Removed from home page");
   };
+  // Re-publish the whole home selection at once — the reliable "save" for the
+  // home strip, in case an individual toggle request was missed.
+  const [savingHome, setSavingHome] = useState(false);
+  const updateHomePics = () => {
+    const ids = photos.filter((p) => p.home).map((p) => p.id);
+    setSavingHome(true);
+    actions
+      .syncHomePhotos(ids)
+      .then(() => showToast(`Home page updated — ${ids.length} photo${ids.length === 1 ? "" : "s"}`))
+      .catch(() => showToast("Couldn't update home page"))
+      .finally(() => setSavingHome(false));
+  };
   const editCaption = (id: string, cap: string) => {
     setPhotos((arr) => arr.map((p) => (p.id === id ? { ...p, cap } : p)));
   };
@@ -779,6 +791,17 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                     </button>
                   ))}
                 </div>
+                <button
+                  className="btn-s bs-ink"
+                  style={{ marginLeft: "auto" }}
+                  disabled={savingHome}
+                  onClick={updateHomePics}
+                  title="Publish the photos marked with the home icon to the public home page"
+                >
+                  {savingHome
+                    ? "Updating…"
+                    : `⌂ Update home pictures (${photos.filter((p) => p.home).length})`}
+                </button>
               </div>
               <div className="photogrid">
                 {visiblePhotos.map((p) => (

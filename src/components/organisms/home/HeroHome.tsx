@@ -28,29 +28,31 @@ export function HeroHome() {
               HELLO, LITTLE FRIEND ✯
             </div>
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[88px] mt-5 leading-[0.95] font-black">
-              <span className="block">The brightest</span>
-              <span className="block text-coral-400">part of</span>
-              <span className="block relative">
-                every day.
-                <svg
-                  className="absolute -bottom-2 left-0"
-                  width="320"
-                  height="18"
-                  viewBox="0 0 320 18"
-                  aria-hidden
-                >
-                  <path
-                    d="M5 13 Q 80 -2, 160 9 T 315 9"
-                    stroke="#FFD23F"
-                    strokeWidth="6"
-                    fill="none"
-                    strokeLinecap="round"
-                  />
-                </svg>
+              <span className="block">Every day at</span>
+              <span className="block">
+                <span className="relative inline-block text-coral-400">
+                  Lighthouse
+                  <svg
+                    className="absolute -bottom-2 left-0 w-full"
+                    height="18"
+                    viewBox="0 0 320 18"
+                    preserveAspectRatio="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M5 13 Q 80 -2, 160 9 T 315 9"
+                      stroke="#FFD23F"
+                      strokeWidth="6"
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </span>
               </span>
+              <span className="block">is the brightest.</span>
             </h1>
             <p className="text-lg mt-7 text-ink-700 max-w-[460px] leading-relaxed">
-              For seven years we&apos;ve been the Twin Cities&apos; favorite daycare —
+              For seven years we&apos;ve been Rawalpindi&apos;s favorite daycare —
               built around joyful play, real safety, and 22 teachers who genuinely love what they do.
             </p>
             <div className="flex flex-wrap gap-4 mt-9 items-center">

@@ -41,7 +41,9 @@ export function ScrapbookPhoto({
           <PhotoPlaceholder scene={scene ?? "play"} className="w-full h-full" />
         )}
       </div>
-      <div className="hand text-center mt-2.5 text-[20px]">{caption}</div>
+      {caption ? (
+        <div className="hand text-center mt-2.5 text-[20px]">{caption}</div>
+      ) : null}
     </div>
   );
 }

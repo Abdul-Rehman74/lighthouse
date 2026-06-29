@@ -36,7 +36,7 @@ const faqs = [
   },
   {
     q: "Where are you located?",
-    a: "We have branches across the Twin Cities — Islamabad and Rawalpindi. See the Contact page for addresses and a map.",
+    a: "We have two branches in Rawalpindi. See the Contact page for addresses and a map.",
   },
 ];
 

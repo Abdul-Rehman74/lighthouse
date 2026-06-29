@@ -8,13 +8,18 @@ import styles from "./HomeIntro.module.css";
 const clamp = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const easeIO = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
+// Module-level flag: persists across client-side navigations but resets on a
+// full page load. So the intro + welcome modal play on refresh / first visit,
+// not every time the user clicks back to Home.
+let introSeen = false;
+
 /**
  * Home-page entrance: a full-screen lighthouse "portal" that zooms in and
  * dissolves, then reveals a welcome modal. Ported from the design's index.html.
  * The intro completing is what triggers the modal, so both live here.
  */
 export function HomeIntro() {
-  const [showPortal, setShowPortal] = useState(true);
+  const [showPortal, setShowPortal] = useState(() => !introSeen);
   const [welcomeState, setWelcomeState] = useState<"hidden" | "show" | "in">("hidden");
 
   const portalRef = useRef<HTMLDivElement | null>(null);
@@ -23,6 +28,10 @@ export function HomeIntro() {
   const bloomRef = useRef<HTMLDivElement | null>(null);
   const revealed = useRef(false);
   const welcomeTimer = useRef<number | undefined>(undefined);
+  // True once this component instance has started the intro. Lets us tell a
+  // React StrictMode effect re-run (same instance) apart from a real client
+  // navigation (fresh instance), so dev still shows the intro once.
+  const playedRef = useRef(false);
 
   const lock = () => {
     document.documentElement.style.overflow = "hidden";
@@ -75,6 +84,14 @@ export function HomeIntro() {
   }, [finish]);
 
   useEffect(() => {
+    // Already played in this page-load session (client nav back to Home) → skip.
+    if (introSeen && !playedRef.current) {
+      setShowPortal(false);
+      return;
+    }
+    introSeen = true;
+    playedRef.current = true;
+
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
       setShowPortal(false);
@@ -104,6 +121,13 @@ export function HomeIntro() {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [welcomeState, closeWelcome]);
+
+  // Keep the page from scrolling behind the welcome modal while it's open.
+  useEffect(() => {
+    if (welcomeState === "hidden") return;
+    lock();
+    return () => unlock();
+  }, [welcomeState]);
 
   return (
     <>

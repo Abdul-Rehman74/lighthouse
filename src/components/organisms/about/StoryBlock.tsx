@@ -25,7 +25,7 @@ export function StoryBlock() {
               care — all supervised. Every little routine, watched.
             </p>
             <p>
-              We&apos;ve grown across the Twin Cities because mothers tell other mothers. That&apos;s
+              We&apos;ve grown across Rawalpindi because mothers tell other mothers. That&apos;s
               still our favorite kind of advertising.
             </p>
           </div>

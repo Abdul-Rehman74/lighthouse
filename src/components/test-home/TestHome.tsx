@@ -165,7 +165,7 @@ export function TestHome() {
         <div className={k("blob", "b2")} />
         <div className={styles.heroWrap}>
           <div className={styles.heroCopy} ref={heroCopyRef}>
-            <span className={styles.kicker}>✿ Est. 2019 · Twin Cities</span>
+            <span className={styles.kicker}>✿ Est. 2019 · Rawalpindi</span>
             <h1 className={styles.heroH1}>
               The brightest
               <br />
@@ -438,7 +438,7 @@ export function TestHome() {
                 </div>
               </Link>
               <p style={{ fontSize: "14px", lineHeight: 1.6, maxWidth: "280px" }}>
-                Twin Cities&apos; favourite daycare and Montessori — caring for little ones from 2
+                Rawalpindi&apos;s favourite daycare and Montessori — caring for little ones from 2
                 months onwards since 2019.
               </p>
             </div>
@@ -465,7 +465,7 @@ export function TestHome() {
           </div>
           <div className={k("inner", "bottom")}>
             <div>© 2026 Lighthouse Daycare &amp; Montessori.</div>
-            <div className={styles.hand} style={{ color: "var(--sun)" }}>made with ✿ in the Twin Cities</div>
+            <div className={styles.hand} style={{ color: "var(--sun)" }}>made with ✿ in Rawalpindi</div>
           </div>
         </footer>
       </div>

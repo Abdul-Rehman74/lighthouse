@@ -21,7 +21,7 @@ export function AboutHero() {
             <p className="text-lg mt-6 text-ink-700 max-w-[480px] leading-relaxed">
               Lighthouse started as a small room with big intentions: a daycare that
               working mothers could trust the way they trust family. Today we&apos;re a fully
-              staffed Montessori for the Twin Cities — and the same warm idea still runs the place.
+              staffed Montessori in Rawalpindi — and the same warm idea still runs the place.
             </p>
           </div>
           <div className="relative h-[420px] hidden md:block">

@@ -10,7 +10,7 @@ import { SocialSection } from "@/components/organisms/contact/SocialSection";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "WhatsApp us, fill the form to book a free trial, or visit one of our two branches across the Twin Cities.",
+    "WhatsApp us, fill the form to book a free trial, or visit one of our two branches in Rawalpindi.",
 };
 
 export default function ContactPage() {
