@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Scene } from "@/components/atoms/PhotoPlaceholder";
 import { ScrapbookPhoto } from "@/components/molecules/ScrapbookPhoto";
+import { Lightbox } from "@/components/molecules/Lightbox";
 import { Container } from "@/components/atoms/Container";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +53,7 @@ const tapes = [
 
 export function GalleryFilter({ photos }: { photos?: GalleryPhoto[] }) {
   const [active, setActive] = useState<Filter>("All");
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const items: Item[] = useMemo(() => {
     if (photos && photos.length) {
@@ -107,6 +109,7 @@ export function GalleryFilter({ photos }: { photos?: GalleryPhoto[] }) {
                   rotate={p.r}
                   tapeColor={tapes[i % tapes.length]}
                   height={240}
+                  onClick={p.src ? () => setOpenIndex(i) : undefined}
                 />
               </motion.div>
             ))}
@@ -119,6 +122,12 @@ export function GalleryFilter({ photos }: { photos?: GalleryPhoto[] }) {
           New photos uploaded by our teachers every week · Follow us on Instagram for daily updates
         </p>
       </Container>
+      <Lightbox
+        items={filtered.filter((p) => p.src).map((p) => ({ src: p.src!, caption: p.cap }))}
+        index={openIndex}
+        onClose={() => setOpenIndex(null)}
+        onNavigate={setOpenIndex}
+      />
     </section>
   );
 }

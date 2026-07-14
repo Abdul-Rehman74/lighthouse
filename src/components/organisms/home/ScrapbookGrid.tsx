@@ -3,6 +3,7 @@ import { Button } from "@/components/atoms/Button";
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { ScrapbookPhoto } from "@/components/molecules/ScrapbookPhoto";
+import { ScrapbookGridClient } from "@/components/organisms/home/ScrapbookGridClient";
 import type { Scene } from "@/components/atoms/PhotoPlaceholder";
 import { getHomePhotos } from "@/lib/site-settings";
 
@@ -43,29 +44,26 @@ export async function ScrapbookGrid() {
             <Link href="/gallery">Visit the gallery</Link>
           </Button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-12">
-          {tiles.length > 0
-            ? tiles.map((p, i) => (
-                <ScrapbookPhoto
-                  key={i}
-                  src={p.src}
-                  caption={p.cap}
-                  rotate={ROTATE[i % ROTATE.length]}
-                  tapeColor={TAPE[i % TAPE.length]}
-                  height={220}
-                />
-              ))
-            : fallback.map((it, i) => (
-                <ScrapbookPhoto
-                  key={i}
-                  scene={it.s}
-                  caption={it.c}
-                  rotate={ROTATE[i % ROTATE.length]}
-                  tapeColor={TAPE[i % TAPE.length]}
-                  height={220}
-                />
-              ))}
-        </div>
+        {tiles.length > 0 ? (
+          <ScrapbookGridClient
+            tiles={tiles.map((p) => ({ src: p.src, cap: p.cap }))}
+            rotate={ROTATE}
+            tape={TAPE}
+          />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-12">
+            {fallback.map((it, i) => (
+              <ScrapbookPhoto
+                key={i}
+                scene={it.s}
+                caption={it.c}
+                rotate={ROTATE[i % ROTATE.length]}
+                tapeColor={TAPE[i % TAPE.length]}
+                height={220}
+              />
+            ))}
+          </div>
+        )}
       </Container>
     </section>
   );
