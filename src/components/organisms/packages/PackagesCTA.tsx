@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/atoms/Button";
+import { WhatsAppButton } from "@/components/atoms/WhatsAppButton";
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { getSiteSettings } from "@/lib/site-settings";
@@ -22,11 +23,7 @@ export async function PackagesCTA() {
             <Button asChild variant="primary">
               <Link href="/contact">Book a free trial →</Link>
             </Button>
-            <Button asChild variant="whatsapp">
-              <a href={settings.phoneHref} target="_blank" rel="noreferrer">
-                💬 WhatsApp us
-              </a>
-            </Button>
+            <WhatsAppButton href={settings.phoneHref}>💬 WhatsApp us</WhatsAppButton>
           </div>
         </div>
       </Container>

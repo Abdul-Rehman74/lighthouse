@@ -1,4 +1,7 @@
+"use client";
+
 import { Instagram, Facebook, MessageCircle } from "lucide-react";
+import { trackMetaEvent } from "@/lib/pixel";
 
 type Kind = "whatsapp" | "instagram" | "facebook";
 
@@ -23,6 +26,7 @@ export function SocialPill({ kind, href = "#" }: { kind: Kind; href?: string }) 
       rel="noreferrer"
       className="w-[38px] h-[38px] rounded-full flex items-center justify-center text-white transition-transform hover:-translate-y-0.5"
       style={{ background: s.bg }}
+      onClick={kind === "whatsapp" ? () => trackMetaEvent("Contact", { method: "whatsapp" }) : undefined}
     >
       <Icon size={18} />
     </a>

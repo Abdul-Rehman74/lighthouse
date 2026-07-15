@@ -8,6 +8,8 @@ import { getSiteSettings } from "@/lib/site-settings";
 
 // Google Ads conversion tag, provided by marketing (AW-18322831557).
 const GOOGLE_ADS_ID = "AW-18322831557";
+// Meta (Facebook/Instagram) Pixel, provided by marketing.
+const META_PIXEL_ID = "2183136998918438";
 
 // Render public pages per-request so admin-managed details (name, WhatsApp,
 // gallery photos) always reflect the current database state immediately.
@@ -35,6 +37,30 @@ export default async function MarketingLayout({ children }: { children: React.Re
           gtag('config', '${GOOGLE_ADS_ID}');
         `}
       </Script>
+      <Script id="meta-pixel" strategy="afterInteractive">
+        {`
+          !function(f,b,e,v,n,t,s)
+          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+          n.queue=[];t=b.createElement(e);t.async=!0;
+          t.src=v;s=b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t,s)}(window, document,'script',
+          'https://connect.facebook.net/en_US/fbevents.js');
+          fbq('init', '${META_PIXEL_ID}');
+          fbq('track', 'PageView');
+        `}
+      </Script>
+      <noscript>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          height="1"
+          width="1"
+          alt=""
+          style={{ display: "none" }}
+          src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
+        />
+      </noscript>
       <CursorSparkles />
       <SiteNav />
       <main className="flex-1">{children}</main>

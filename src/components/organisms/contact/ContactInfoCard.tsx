@@ -1,4 +1,4 @@
-import { Button } from "@/components/atoms/Button";
+import { WhatsAppButton } from "@/components/atoms/WhatsAppButton";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { siteConfig } from "@/lib/site-config";
 import { getSiteSettings } from "@/lib/site-settings";
@@ -15,11 +15,9 @@ export async function ContactInfoCard() {
         <div className="relative">
           <Eyebrow color="text-sun-300">fastest reply</Eyebrow>
           <h3 className="text-2xl mt-1.5 mb-4">WhatsApp us</h3>
-          <Button asChild variant="whatsapp" className="w-full justify-center" size="lg">
-            <a href={settings.phoneHref} target="_blank" rel="noreferrer">
-              💬 {settings.phoneDisplay}
-            </a>
-          </Button>
+          <WhatsAppButton href={settings.phoneHref} className="w-full justify-center" size="lg">
+            💬 {settings.phoneDisplay}
+          </WhatsAppButton>
           <p className="text-[13px] text-cream-50/70 mt-3.5 leading-relaxed">
             We answer within an hour during open hours (Mon–Sat, 7am–6pm).
           </p>

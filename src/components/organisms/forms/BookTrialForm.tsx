@@ -6,6 +6,7 @@ import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { FormField, SelectField, TextAreaField } from "@/components/atoms/FormField";
 import { DatePickerField } from "@/components/atoms/DatePickerField";
 import { submitTrialBooking } from "@/app/actions/booking";
+import { trackMetaEvent } from "@/lib/pixel";
 
 const initial = {
   name: "",
@@ -38,8 +39,10 @@ export function BookTrialForm() {
     setError(null);
     startTransition(async () => {
       const res = await submitTrialBooking({ ...data, source: "contact-page" });
-      if (res.ok) setSent(true);
-      else setError(res.error ?? "Something went wrong");
+      if (res.ok) {
+        trackMetaEvent("Lead", { content_name: "trial_booking", source: "contact-page" });
+        setSent(true);
+      } else setError(res.error ?? "Something went wrong");
     });
   };
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/atoms/Logo";
 import { SocialPill } from "@/components/atoms/SocialPill";
+import { WhatsAppLink } from "@/components/atoms/WhatsAppLink";
 import { Container } from "@/components/atoms/Container";
 import { siteConfig } from "@/lib/site-config";
 import { getSiteSettings } from "@/lib/site-settings";
@@ -72,14 +73,12 @@ export async function SiteFooter() {
           <div>
             <FooterTitle>Reach us</FooterTitle>
             <div className="flex flex-col gap-2.5 text-sm text-cream-50/70">
-              <a
+              <WhatsAppLink
                 href={settings.phoneHref}
-                target="_blank"
-                rel="noreferrer"
                 className="flex items-center gap-2 hover:text-cream-50 transition-colors"
               >
                 <MessageCircle size={16} /> WhatsApp {settings.phoneDisplay}
-              </a>
+              </WhatsAppLink>
               <a
                 href={settings.social.instagram.href}
                 target="_blank"

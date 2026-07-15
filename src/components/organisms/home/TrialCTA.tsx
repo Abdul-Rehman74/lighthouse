@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
-import { Button } from "@/components/atoms/Button";
+import { WhatsAppButton } from "@/components/atoms/WhatsAppButton";
 import { getSiteSettings } from "@/lib/site-settings";
 import { MiniTrialForm } from "@/components/organisms/forms/MiniTrialForm";
 
@@ -33,11 +33,7 @@ export async function TrialCTA() {
               We&apos;ll WhatsApp confirm within an hour.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Button asChild variant="whatsapp">
-                <a href={settings.phoneHref} target="_blank" rel="noreferrer">
-                  💬 WhatsApp us
-                </a>
-              </Button>
+              <WhatsAppButton href={settings.phoneHref}>💬 WhatsApp us</WhatsAppButton>
               <Link href="/contact" className="text-sm font-bold text-ink-900 underline underline-offset-4 decoration-2">
                 or fill the form →
               </Link>

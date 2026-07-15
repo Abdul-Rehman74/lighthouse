@@ -1,4 +1,5 @@
 import { Button } from "@/components/atoms/Button";
+import { WhatsAppButton } from "@/components/atoms/WhatsAppButton";
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { siteConfig } from "@/lib/site-config";
@@ -45,11 +46,9 @@ export async function BranchesSection() {
                         Get directions →
                       </a>
                     </Button>
-                    <Button asChild variant="whatsapp" size="sm">
-                      <a href={settings.phoneHref} target="_blank" rel="noreferrer">
-                        💬 WhatsApp
-                      </a>
-                    </Button>
+                    <WhatsAppButton href={settings.phoneHref} size="sm">
+                      💬 WhatsApp
+                    </WhatsAppButton>
                   </div>
                 </div>
               </div>

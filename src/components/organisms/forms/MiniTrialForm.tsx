@@ -5,6 +5,7 @@ import { Button } from "@/components/atoms/Button";
 import { FormField } from "@/components/atoms/FormField";
 import { DatePickerField } from "@/components/atoms/DatePickerField";
 import { submitTrialBooking } from "@/app/actions/booking";
+import { trackMetaEvent } from "@/lib/pixel";
 
 const initial = { name: "", age: "", date: "", phone: "" };
 
@@ -22,8 +23,10 @@ export function MiniTrialForm() {
     setError(null);
     startTransition(async () => {
       const res = await submitTrialBooking({ ...data, source: "home-mini" });
-      if (res.ok) setSent(true);
-      else setError(res.error ?? "Something went wrong");
+      if (res.ok) {
+        trackMetaEvent("Lead", { content_name: "trial_booking", source: "home-mini" });
+        setSent(true);
+      } else setError(res.error ?? "Something went wrong");
     });
   };
 

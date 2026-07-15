@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { siteConfig } from "@/lib/site-config";
+import { trackMetaEvent } from "@/lib/pixel";
 
 export function WhatsAppFab({ phoneHref = siteConfig.whatsapp.href }: { phoneHref?: string }) {
   const [hover, setHover] = useState(false);
@@ -13,6 +14,7 @@ export function WhatsAppFab({ phoneHref = siteConfig.whatsapp.href }: { phoneHre
       aria-label="Chat with us on WhatsApp"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      onClick={() => trackMetaEvent("Contact", { method: "whatsapp" })}
       className="fixed bottom-6 right-6 sm:bottom-7 sm:right-7 z-40 bg-[#25D366] text-white rounded-full flex items-center cursor-pointer font-bold text-sm transition-all duration-300"
       style={{
         padding: hover ? "14px 22px 14px 18px" : "14px",

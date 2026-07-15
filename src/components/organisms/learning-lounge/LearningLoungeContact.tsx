@@ -1,4 +1,5 @@
 import { Container } from "@/components/atoms/Container";
+import { WhatsAppLink } from "@/components/atoms/WhatsAppLink";
 
 export function LearningLoungeContact() {
   return (
@@ -19,14 +20,9 @@ export function LearningLoungeContact() {
               usually reply within an hour.
             </p>
             <div className="flex flex-wrap gap-3 mt-7">
-              <a
-                href="https://wa.me/923335566862"
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-whatsapp !text-[15px]"
-              >
+              <WhatsAppLink href="https://wa.me/923335566862" className="btn btn-whatsapp !text-[15px]">
                 💬 WhatsApp us
-              </a>
+              </WhatsAppLink>
               <a href="tel:03335566862" className="btn btn-sun !text-[15px]">
                 Call 0333-5566862
               </a>
