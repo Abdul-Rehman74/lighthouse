@@ -6,6 +6,7 @@ import { DailyRoutine } from "@/components/organisms/about/DailyRoutine";
 import { ValuesStrip } from "@/components/organisms/about/ValuesStrip";
 import { FAQSection } from "@/components/organisms/about/FAQSection";
 import { CTABanner } from "@/components/organisms/CTABanner";
+import { getFaqs } from "@/lib/site-settings";
 
 export const metadata: Metadata = {
   title: "About",
@@ -13,7 +14,8 @@ export const metadata: Metadata = {
     "Seven years of caring for Rawalpindi's little ones — meet the Lighthouse team, daily routine, and our values.",
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const faqs = await getFaqs("about");
   return (
     <>
       <AboutHero />
@@ -21,7 +23,7 @@ export default function AboutPage() {
       <StaffSection />
       <DailyRoutine />
       <ValuesStrip />
-      <FAQSection />
+      <FAQSection faqs={faqs} />
       <CTABanner eyebrow="come visit ✿" title="Words are nice. Visiting is better." />
     </>
   );

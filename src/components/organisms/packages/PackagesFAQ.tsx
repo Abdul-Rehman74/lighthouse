@@ -1,16 +1,10 @@
 import { Container } from "@/components/atoms/Container";
+import { getFaqs } from "@/lib/site-settings";
 
-const faqs = [
-  { q: "Do you accept payment monthly?", a: "Yes — we bill monthly. Annual payment gets a 5% discount." },
-  { q: "Is there a registration or admission fee?", a: "No registration fee. Just the monthly fee for your chosen package." },
-  {
-    q: "Can I switch packages later?",
-    a: "Yes — switch anytime with one month's notice. Many parents start with Half day and move to School day.",
-  },
-  { q: "Do you offer sibling discount?", a: "Yes — 10% off the monthly fee for the second child." },
-];
+export async function PackagesFAQ() {
+  const faqs = await getFaqs("packages");
+  if (!faqs.length) return null;
 
-export function PackagesFAQ() {
   return (
     <section className="py-14">
       <Container>

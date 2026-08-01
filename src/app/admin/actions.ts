@@ -23,9 +23,23 @@ import {
   updateTestimonial,
   deleteTestimonial,
   getTestimonialVideo,
+  setHomeTestimonials,
+  addStaff,
+  updateStaff,
+  deleteStaff,
+  reorderStaff,
+  addRoutine,
+  updateRoutine,
+  deleteRoutine,
+  reorderRoutine,
+  addFaq,
+  updateFaq,
+  deleteFaq,
+  reorderFaqs,
   type SubmissionStatus,
   type PhotoCategory,
   type AdminSettings,
+  type FaqGroup,
 } from "@/lib/admin-data";
 import { signUpload, destroyVideo, cloudinaryConfigured, type UploadSignature } from "@/lib/cloudinary";
 import type { VideoRef } from "@/lib/video";
@@ -140,7 +154,7 @@ export async function createTestimonial(input: {
 
 export async function saveTestimonial(
   id: string,
-  patch: { name?: string; child?: string; quote?: string; duration?: string; video?: VideoRef | null },
+  patch: { name?: string; child?: string; quote?: string; duration?: string; video?: VideoRef | null; home?: boolean },
 ): Promise<void> {
   await requireSession();
   // If the video changed/cleared and the old one was a Cloudinary upload, remove the old file.
@@ -152,6 +166,7 @@ export async function saveTestimonial(
   await updateTestimonial(id, patch);
   revalidatePath("/admin");
   revalidatePath("/gallery");
+  revalidatePath("/");
 }
 
 export async function removeTestimonial(id: string): Promise<void> {
@@ -161,6 +176,121 @@ export async function removeTestimonial(id: string): Promise<void> {
   await deleteTestimonial(id);
   revalidatePath("/admin");
   revalidatePath("/gallery");
+  revalidatePath("/");
+}
+
+/**
+ * Publish the exact set of testimonials chosen for the home page video teaser —
+ * re-syncs the whole selection, so it's reliable even if an individual toggle was missed.
+ */
+export async function syncHomeTestimonials(homeIds: string[]): Promise<void> {
+  await requireSession();
+  await setHomeTestimonials(homeIds);
+  revalidatePath("/admin");
+  revalidatePath("/gallery");
+  revalidatePath("/");
+}
+
+/* ----------------------------- staff ----------------------------- */
+
+export async function createStaff(input: { name: string; role: string; photo?: string }): Promise<string> {
+  await requireSession();
+  const id = await addStaff(input);
+  revalidatePath("/admin");
+  revalidatePath("/about");
+  return id;
+}
+
+export async function saveStaff(
+  id: string,
+  patch: { name?: string; role?: string; photo?: string },
+): Promise<void> {
+  await requireSession();
+  await updateStaff(id, patch);
+  revalidatePath("/admin");
+  revalidatePath("/about");
+}
+
+export async function removeStaff(id: string): Promise<void> {
+  await requireSession();
+  await deleteStaff(id);
+  revalidatePath("/admin");
+  revalidatePath("/about");
+}
+
+export async function saveStaffOrder(orderedIds: string[]): Promise<void> {
+  await requireSession();
+  await reorderStaff(orderedIds);
+  revalidatePath("/admin");
+  revalidatePath("/about");
+}
+
+/* ----------------------------- daily routine ----------------------------- */
+
+export async function createRoutine(input: { title: string; subtitle?: string }): Promise<string> {
+  await requireSession();
+  const id = await addRoutine(input);
+  revalidatePath("/admin");
+  revalidatePath("/about");
+  return id;
+}
+
+export async function saveRoutine(
+  id: string,
+  patch: { title?: string; subtitle?: string },
+): Promise<void> {
+  await requireSession();
+  await updateRoutine(id, patch);
+  revalidatePath("/admin");
+  revalidatePath("/about");
+}
+
+export async function removeRoutine(id: string): Promise<void> {
+  await requireSession();
+  await deleteRoutine(id);
+  revalidatePath("/admin");
+  revalidatePath("/about");
+}
+
+export async function saveRoutineOrder(orderedIds: string[]): Promise<void> {
+  await requireSession();
+  await reorderRoutine(orderedIds);
+  revalidatePath("/admin");
+  revalidatePath("/about");
+}
+
+/* ----------------------------- faqs ----------------------------- */
+
+/** About FAQs show on /about, package FAQs on /packages — revalidate both. */
+function revalidateFaqPages() {
+  revalidatePath("/admin");
+  revalidatePath("/about");
+  revalidatePath("/packages");
+}
+
+export async function createFaq(input: { group: FaqGroup; q: string; a?: string }): Promise<string> {
+  await requireSession();
+  const id = await addFaq(input);
+  revalidateFaqPages();
+  return id;
+}
+
+export async function saveFaq(id: string, patch: { q?: string; a?: string }): Promise<void> {
+  await requireSession();
+  await updateFaq(id, patch);
+  revalidateFaqPages();
+}
+
+export async function removeFaq(id: string): Promise<void> {
+  await requireSession();
+  await deleteFaq(id);
+  revalidateFaqPages();
+}
+
+export async function saveFaqOrder(orderedIds: string[]): Promise<void> {
+  await requireSession();
+  await reorderFaqs(orderedIds);
+  revalidateFaqPages();
 }
 
 /* ----------------------------- cloudinary ----------------------------- */

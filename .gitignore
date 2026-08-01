@@ -149,3 +149,6 @@ dist-tailwind.css
 .design-sync/.cache/
 .design-sync/learnings/
 .design-sync/node_modules
+
+# throwaway dir for verification builds (NEXT_DIST_DIR) — never committed
+.next-verify/

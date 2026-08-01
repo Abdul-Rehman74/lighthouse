@@ -68,12 +68,43 @@ export function HeroHome() {
             </div>
           </div>
 
-          {/* Animated lighthouse with floating balloons + study objects */}
+          {/* Animated lighthouse with floating study props */}
           <div className="relative flex items-center justify-center min-h-[340px] lg:min-h-[520px]">
-            <div className="balloon" style={{ left: "18%", top: "5%", "--bc": "#F47A4F", "--bw": "46px", "--r": "-5deg", "--d": "5.4s", "--dl": "0s" } as React.CSSProperties} />
-            <div className="balloon" style={{ right: "16%", top: "1%", "--bc": "#FFD23F", "--bw": "54px", "--r": "5deg", "--d": "6.4s", "--dl": ".7s" } as React.CSSProperties} />
-            <div className="balloon" style={{ left: "28%", top: "23%", "--bc": "#8FD4AC", "--bw": "36px", "--r": "-3deg", "--d": "4.9s", "--dl": "1.3s" } as React.CSSProperties} />
-            <div className="balloon" style={{ right: "25%", top: "27%", "--bc": "#5FB3F0", "--bw": "38px", "--r": "4deg", "--d": "5.9s", "--dl": ".4s" } as React.CSSProperties} />
+            {/* ruler */}
+            <svg className="study" style={{ left: "16%", top: "6%", width: "54px", "--d": "5.4s", "--dl": "0s", "--r": "-8deg", "--rs": "6deg" } as React.CSSProperties} viewBox="0 0 56 26" fill="none" aria-hidden>
+              <rect x="2" y="4" width="52" height="18" rx="3" fill="#FFD7B0" stroke="#1F2A37" strokeWidth="2.2" />
+              <path d="M9 4v6M17 4v10M25 4v6M33 4v10M41 4v6M49 4v10" stroke="#1F2A37" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            {/* apple */}
+            <svg className="study" style={{ right: "14%", top: "0%", width: "44px", "--d": "6.4s", "--dl": ".7s", "--r": "5deg", "--rs": "-8deg" } as React.CSSProperties} viewBox="0 0 44 46" fill="none" aria-hidden>
+              <path d="M22 17c-8-6-19-1-19 10 0 10 8 18 14 18 3 0 4-1.4 5-1.4s2 1.4 5 1.4c6 0 14-8 14-18 0-11-11-16-19-10Z" fill="#F0514F" stroke="#1F2A37" strokeWidth="2.2" strokeLinejoin="round" />
+              <path d="M22 17c0-4 1-8 3-10" stroke="#8B5E3C" strokeWidth="2.2" strokeLinecap="round" />
+              <path d="M24 9c4-4 9-2 9 2-4 2-8-1-9-2Z" fill="#8FD4AC" stroke="#1F2A37" strokeWidth="1.6" strokeLinejoin="round" />
+            </svg>
+            {/* stacking blocks */}
+            <svg className="study" style={{ left: "27%", top: "24%", width: "42px", "--d": "4.9s", "--dl": "1.3s", "--r": "-3deg", "--rs": "8deg" } as React.CSSProperties} viewBox="0 0 44 40" fill="none" aria-hidden>
+              <rect x="4" y="20" width="36" height="16" rx="4" fill="#5FB3F0" stroke="#1F2A37" strokeWidth="2" />
+              <rect x="9" y="10" width="26" height="14" rx="4" fill="#FFD23F" stroke="#1F2A37" strokeWidth="2" />
+              <rect x="14" y="2" width="16" height="12" rx="4" fill="#F47A4F" stroke="#1F2A37" strokeWidth="2" />
+            </svg>
+            {/* alphabet block */}
+            <svg className="study" style={{ left: "24%", top: "49%", width: "42px", "--d": "5.7s", "--dl": "1.15s", "--r": "7deg", "--rs": "-8deg" } as React.CSSProperties} viewBox="0 0 44 44" aria-hidden>
+              <rect x="5" y="5" width="34" height="34" rx="6" fill="#8FD4AC" stroke="#1F2A37" strokeWidth="2.4" />
+              <text x="22" y="29" textAnchor="middle" fontFamily="Arial,sans-serif" fontWeight="900" fontSize="20" fill="#1F2A37">A</text>
+            </svg>
+            {/* paint palette */}
+            <svg className="study" style={{ right: "23%", top: "26%", width: "46px", "--d": "5.9s", "--dl": ".4s", "--r": "6deg", "--rs": "-7deg" } as React.CSSProperties} viewBox="0 0 48 40" fill="none" aria-hidden>
+              <path d="M24 4C11 4 3 12 3 21c0 7 5 10 10 10 2 0 3-1 3-3 0-1-1-2-1-4 0-2 2-3 4-3h8c6 0 11-4 11-10C38 8 32 4 24 4Z" fill="#FFF6F4" stroke="#1F2A37" strokeWidth="2.2" strokeLinejoin="round" />
+              <circle cx="12" cy="14" r="2.6" fill="#F47A4F" />
+              <circle cx="20" cy="9" r="2.6" fill="#FFD23F" />
+              <circle cx="29" cy="10" r="2.6" fill="#8FD4AC" />
+              <circle cx="33" cy="17" r="2.6" fill="#5FB3F0" />
+            </svg>
+            {/* magnifying glass */}
+            <svg className="study" style={{ right: "3%", top: "20%", width: "38px", "--d": "5.2s", "--dl": ".9s", "--r": "-10deg", "--rs": "10deg" } as React.CSSProperties} viewBox="0 0 40 40" fill="none" aria-hidden>
+              <circle cx="17" cy="17" r="12" fill="#CDE8FB" stroke="#1F2A37" strokeWidth="2.4" />
+              <line x1="26" y1="26" x2="36" y2="36" stroke="#1F2A37" strokeWidth="4" strokeLinecap="round" />
+            </svg>
 
             {/* book */}
             <svg className="study" style={{ left: "6%", top: "30%", width: "48px", "--d": "6.2s", "--dl": ".2s", "--r": "-8deg", "--rs": "7deg" } as React.CSSProperties} viewBox="0 0 48 40" fill="none" aria-hidden>
@@ -89,10 +120,21 @@ export function HeroHome() {
               <path d="M20 33h8l-4 8Z" fill="#F2C28B" />
               <path d="M22 38h4l-2 3Z" fill="#1F2A37" />
             </svg>
-            {/* block A */}
-            <svg className="study" style={{ left: "13%", bottom: "12%", width: "44px", "--d": "5.9s", "--dl": "1s", "--r": "8deg", "--rs": "-7deg" } as React.CSSProperties} viewBox="0 0 44 44" aria-hidden>
-              <rect x="5" y="5" width="34" height="34" rx="6" fill="#8FD4AC" stroke="#1F2A37" strokeWidth="2.4" />
-              <text x="22" y="29" textAnchor="middle" fontFamily="Arial,sans-serif" fontWeight="900" fontSize="20" fill="#1F2A37">A</text>
+            {/* abacus */}
+            <svg className="study" style={{ left: "13%", bottom: "12%", width: "46px", "--d": "5.9s", "--dl": "1s", "--r": "8deg", "--rs": "-7deg" } as React.CSSProperties} viewBox="0 0 48 44" fill="none" aria-hidden>
+              <rect x="3" y="4" width="42" height="36" rx="5" fill="#FFF6F4" stroke="#1F2A37" strokeWidth="2.4" />
+              <path d="M3 16h42M3 28h42" stroke="#1F2A37" strokeWidth="1.8" />
+              <circle cx="14" cy="10" r="3.4" fill="#F47A4F" />
+              <circle cx="24" cy="10" r="3.4" fill="#FFD23F" />
+              <circle cx="18" cy="22" r="3.4" fill="#8FD4AC" />
+              <circle cx="30" cy="22" r="3.4" fill="#5FB3F0" />
+              <circle cx="15" cy="34" r="3.4" fill="#FFD23F" />
+              <circle cx="27" cy="34" r="3.4" fill="#F47A4F" />
+            </svg>
+            {/* paper plane */}
+            <svg className="study" style={{ left: "2%", bottom: "34%", width: "40px", "--d": "6.1s", "--dl": "1.6s", "--r": "-14deg", "--rs": "12deg" } as React.CSSProperties} viewBox="0 0 44 36" fill="none" aria-hidden>
+              <path d="M2 16 42 2 30 34l-9-11Z" fill="#CDE8FB" stroke="#1F2A37" strokeWidth="2.2" strokeLinejoin="round" />
+              <path d="M42 2 21 23" stroke="#1F2A37" strokeWidth="2.2" strokeLinejoin="round" />
             </svg>
             {/* crayon */}
             <svg className="study" style={{ right: "11%", bottom: "18%", width: "40px", "--d": "6.6s", "--dl": ".35s", "--r": "-18deg", "--rs": "11deg" } as React.CSSProperties} viewBox="0 0 44 44" fill="none" aria-hidden>

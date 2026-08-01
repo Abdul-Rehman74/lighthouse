@@ -45,8 +45,102 @@ export interface Testimonial {
   quote: string;
   duration: string;
   video?: VideoRef | null;
+  /** Selected to appear in the home page video testimonials teaser. */
+  home: boolean;
   ts: number;
 }
+
+/** A team member shown in the About page "the people" section. */
+export interface Staff {
+  id: string;
+  name: string;
+  /** Job title, e.g. "Vice Principal". May be empty. */
+  role: string;
+  /** Optional photo as a base64 data URL. When set it replaces the initials avatar. */
+  photo: string;
+  order: number;
+  ts: number;
+}
+
+/**
+ * Seed team, shown until the admin adds their own.
+ * Ids are stable slugs so the fallback list is deterministic.
+ */
+export const DEFAULT_STAFF: Staff[] = [
+  { id: "amira-malik", name: "Ms. Amira Malik", role: "Founder and Principal", photo: "", order: 0, ts: 0 },
+  { id: "zeba", name: "Ms. Zeba", role: "Vice Principal", photo: "", order: 1, ts: 0 },
+  { id: "aisha-malik", name: "Ms. Aisha Malik", role: "", photo: "", order: 2, ts: 0 },
+  { id: "ayesha-irfan", name: "Ms. Ayesha Irfan", role: "Senior Coordinator", photo: "", order: 3, ts: 0 },
+  { id: "maha-zaigham", name: "Ms. Maha Zaigham", role: "Legal Advisor", photo: "", order: 4, ts: 0 },
+  { id: "bashir", name: "Dr. Bashir", role: "School Psychologist & Speech-Language Specialist", photo: "", order: 5, ts: 0 },
+  { id: "mehpara-qadir", name: "Ms. Mehpara Qadir", role: "Curriculum Development & Media Coordinator", photo: "", order: 6, ts: 0 },
+];
+
+/** A card in the About page "a typical day" grid. */
+export interface RoutineItem {
+  id: string;
+  /** Activity name — the bold line on the card. */
+  title: string;
+  /** Optional supporting line under it. Empty by default. */
+  subtitle: string;
+  order: number;
+  ts: number;
+}
+
+/** Seed activities, shown until the admin edits them. Subtitles start empty. */
+export const DEFAULT_ROUTINE: { title: string; subtitle: string }[] = [
+  "Circle time",
+  "Yoga",
+  "Music",
+  "Zumba",
+  "Creative Skills",
+  "DIYs",
+  "STEM through Art",
+  "Table Etiquette",
+  "Nature Time",
+  "Mind Games",
+  "Public Speaking",
+].map((title) => ({ title, subtitle: "" }));
+
+/** Which page an FAQ belongs to. Both sets live in one collection. */
+export type FaqGroup = "about" | "packages";
+
+export interface Faq {
+  id: string;
+  group: FaqGroup;
+  /** Question. */
+  q: string;
+  /** Answer. */
+  a: string;
+  order: number;
+  ts: number;
+}
+
+/** Seed FAQs for the About page accordion. */
+export const DEFAULT_FAQS_ABOUT: { q: string; a: string }[] = [
+  { q: "What ages do you accept?", a: "We welcome children from 2 months onwards. Our rooms are organized by age — infants, toddlers, and pre-K — so each child gets care tuned to their stage." },
+  { q: "What are your timings?", a: "We are open Monday to Saturday, 7:00 AM to 6:00 PM. We are closed on Sundays and gazetted holidays." },
+  { q: "How do you handle hygiene and sanitization?", a: "Sanitization is on a strict daily checklist — linen, toys, surfaces, bottles, and meal areas. Our health & hygiene lead supervises all protocols, and meals are prepared and served under supervision." },
+  { q: "How many teachers and nannies are on staff?", a: "We have 22 trained teachers and 5 professional nannies — a teacher-to-child ratio that means real eyes on every little one, all day." },
+  { q: "Do you offer a free trial?", a: "Yes — bring your child in for a half-day visit, free of charge. Walk through, meet the teachers, see the rooms. WhatsApp us or fill the form on the Contact page." },
+  { q: "How do you communicate with parents?", a: "Most communication is through WhatsApp — instant updates, photos and quick check-ins. We also share photos and updates on our Instagram and Facebook pages." },
+  { q: "What is your Montessori approach?", a: "Self-directed play with carefully chosen hands-on materials, calibrated to your child's developmental stage. We blend structured circle time with open exploration." },
+  { q: "Where are you located?", a: "We have two branches in Rawalpindi. See the Contact page for addresses and a map." },
+];
+
+/** Seed FAQs for the Packages page strip. */
+export const DEFAULT_FAQS_PACKAGES: { q: string; a: string }[] = [
+  { q: "Do you accept payment monthly?", a: "Yes — we bill monthly. Annual payment gets a 5% discount." },
+  { q: "Is there a registration or admission fee?", a: "No registration fee. Just the monthly fee for your chosen package." },
+  { q: "Can I switch packages later?", a: "Yes — switch anytime with one month's notice. Many parents start with Half day and move to School day." },
+  { q: "Do you offer sibling discount?", a: "Yes — 10% off the monthly fee for the second child." },
+];
+
+export const DEFAULT_STAFF_HEADING = "Meet our Team";
+export const DEFAULT_STAFF_NOTE =
+  "Every team member is trained in early childhood care, first aid, and our hygiene protocols.";
+export const DEFAULT_STAFF_FOOTNOTE =
+  "+ 16 more teachers across our Toddler, Pre-K and Montessori rooms · Meet everyone on your visit";
 
 /** Social profile URLs shown in the site footer and contact page. */
 export interface SocialLinks {
@@ -103,6 +197,38 @@ export const DEFAULT_PACKAGES: Package[] = [
 export const DEFAULT_PACKAGES_NOTE =
   "Sibling discount: 10% off the second child · Annual payment: 5% off · No registration fee";
 
+/** A column header in the "Compare what's included" table on the Packages page. */
+export interface ComparisonColumn {
+  label: string;
+  /** Renders this column highlighted (star + tinted cells), e.g. the "most popular" tier. */
+  highlight: boolean;
+}
+
+/** A row in the comparison table — one value per column, aligned by index. */
+export interface ComparisonRow {
+  label: string;
+  values: string[];
+}
+
+export const DEFAULT_COMPARISON_COLUMNS: ComparisonColumn[] = [
+  { label: "Half day", highlight: false },
+  { label: "School day ⭐", highlight: true },
+  { label: "Full day", highlight: false },
+];
+
+export const DEFAULT_COMPARISON_ROWS: ComparisonRow[] = [
+  { label: "Hours", values: ["8am – 12pm", "8am – 3pm", "8am – 6pm"] },
+  { label: "Breakfast", values: ["✓", "✓", "✓"] },
+  { label: "Hot lunch", values: ["✓", "✓", "✓"] },
+  { label: "Afternoon nap", values: ["—", "✓", "✓"] },
+  { label: "Art & sensory", values: ["—", "✓", "✓"] },
+  { label: "Outdoor play (am)", values: ["✓", "✓", "✓"] },
+  { label: "Outdoor play (pm)", values: ["—", "—", "✓"] },
+  { label: "Evening snack", values: ["—", "—", "✓"] },
+  { label: "WhatsApp updates", values: ["✓", "✓", "✓"] },
+  { label: "Monthly fee (Rs.)", values: ["22,000", "25,000", "28,000"] },
+];
+
 export interface AdminSettings {
   name: string;
   phone: string;
@@ -115,6 +241,16 @@ export interface AdminSettings {
   packages: Package[];
   /** Small print under the package cards. */
   packagesNote: string;
+  /** Column headers for the "Compare what's included" table. */
+  comparisonColumns: ComparisonColumn[];
+  /** Rows for the "Compare what's included" table. */
+  comparisonRows: ComparisonRow[];
+  /** Headline above the About page team grid, e.g. "Meet our Team". */
+  staffHeading: string;
+  /** Small print beside that headline. */
+  staffNote: string;
+  /** Line under the team grid. */
+  staffFootnote: string;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -138,6 +274,17 @@ interface SettingsDoc {
   social?: Partial<SocialLinks>;
   packages?: Package[];
   packagesNote?: string;
+  comparisonColumns?: ComparisonColumn[];
+  comparisonRows?: ComparisonRow[];
+  staffHeading?: string;
+  staffNote?: string;
+  staffFootnote?: string;
+  /** Set once DEFAULT_STAFF has been copied into the `staff` collection. */
+  staffSeeded?: boolean;
+  /** Set once DEFAULT_ROUTINE has been copied into the `routine` collection. */
+  routineSeeded?: boolean;
+  /** Set once the default FAQs have been copied into the `faqs` collection. */
+  faqsSeeded?: boolean;
 }
 
 const SETTINGS_ID = "admin";
@@ -166,6 +313,11 @@ async function ensureSettings(): Promise<SettingsDoc> {
     },
     packages: DEFAULT_PACKAGES,
     packagesNote: DEFAULT_PACKAGES_NOTE,
+    comparisonColumns: DEFAULT_COMPARISON_COLUMNS,
+    comparisonRows: DEFAULT_COMPARISON_ROWS,
+    staffHeading: DEFAULT_STAFF_HEADING,
+    staffNote: DEFAULT_STAFF_NOTE,
+    staffFootnote: DEFAULT_STAFF_FOOTNOTE,
   };
   await c.insertOne(doc as any);
   return doc;
@@ -184,6 +336,12 @@ export async function getPublicSettings(): Promise<AdminSettings> {
     },
     packages: s.packages?.length ? s.packages : DEFAULT_PACKAGES,
     packagesNote: s.packagesNote ?? DEFAULT_PACKAGES_NOTE,
+    comparisonColumns: s.comparisonColumns?.length ? s.comparisonColumns : DEFAULT_COMPARISON_COLUMNS,
+    comparisonRows: s.comparisonRows?.length ? s.comparisonRows : DEFAULT_COMPARISON_ROWS,
+    // `??` not `||` — an admin who clears these fields should get a blank line, not the default back.
+    staffHeading: s.staffHeading ?? DEFAULT_STAFF_HEADING,
+    staffNote: s.staffNote ?? DEFAULT_STAFF_NOTE,
+    staffFootnote: s.staffFootnote ?? DEFAULT_STAFF_FOOTNOTE,
   };
 }
 
@@ -249,6 +407,22 @@ export async function updateSettings(patch: Partial<AdminSettings>): Promise<voi
     }));
   }
   if (typeof patch.packagesNote === "string") $set.packagesNote = patch.packagesNote.trim();
+  // Columns and rows are always saved together (from one admin "Save comparison table" action)
+  // so every row's values array can be re-aligned to the current column count here.
+  if (Array.isArray(patch.comparisonColumns) && Array.isArray(patch.comparisonRows)) {
+    const cols = patch.comparisonColumns.slice(0, 6).map((c) => ({
+      label: String(c.label ?? "").trim(),
+      highlight: !!c.highlight,
+    }));
+    $set.comparisonColumns = cols;
+    $set.comparisonRows = patch.comparisonRows.slice(0, 20).map((r) => ({
+      label: String(r.label ?? "").trim(),
+      values: Array.from({ length: cols.length }, (_, i) => String(r.values?.[i] ?? "").trim()),
+    }));
+  }
+  if (typeof patch.staffHeading === "string") $set.staffHeading = patch.staffHeading.trim();
+  if (typeof patch.staffNote === "string") $set.staffNote = patch.staffNote.trim();
+  if (typeof patch.staffFootnote === "string") $set.staffFootnote = patch.staffFootnote.trim();
   if (Object.keys($set).length) await c.updateOne({ _id: SETTINGS_ID as any }, { $set });
 }
 
@@ -321,12 +495,31 @@ export async function deleteSubmission(id: string): Promise<void> {
 
 /* ----------------------------- Photos ----------------------------- */
 
-export async function listPhotos(): Promise<Photo[]> {
+/**
+ * Public URL for a stored photo, served by `/api/photo/[id]`.
+ * `v` is the row's timestamp so a replaced image can never serve stale bytes.
+ */
+export function photoUrl(id: string, ts: number): string {
+  return `/api/photo/${id}?v=${ts}`;
+}
+
+/**
+ * Photo metadata — deliberately WITHOUT the base64 `src`.
+ *
+ * Images average ~200 kB each as base64 in Mongo. Selecting them here meant every
+ * page render transferred the whole library out of Atlas and inlined it into the
+ * HTML, which burned Vercel origin transfer and made pages crawl. `src` is now a
+ * short URL to `/api/photo/[id]`, which the CDN caches immutably.
+ *
+ * Pass `homeOnly` to filter in the database rather than in JS after the transfer.
+ */
+export async function listPhotos(opts?: { homeOnly?: boolean }): Promise<Photo[]> {
   const c = await col("photos");
-  const docs = await c.find({}).sort({ order: 1 }).toArray();
+  const query = opts?.homeOnly ? { home: true } : {};
+  const docs = await c.find(query, { projection: { src: 0 } }).sort({ order: 1 }).toArray();
   return docs.map((d: any) => ({
     id: d._id.toString(),
-    src: d.src,
+    src: photoUrl(d._id.toString(), d.ts ?? 0),
     cat: d.cat as PhotoCategory,
     cap: d.cap ?? "",
     featured: !!d.featured,
@@ -334,6 +527,14 @@ export async function listPhotos(): Promise<Photo[]> {
     order: d.order ?? 0,
     ts: d.ts ?? Date.now(),
   }));
+}
+
+/** Raw base64 data URL for one photo. Only `/api/photo/[id]` should need this. */
+export async function getPhotoSrc(id: string): Promise<string | null> {
+  if (!ObjectId.isValid(id)) return null;
+  const c = await col("photos");
+  const doc = (await c.findOne({ _id: new ObjectId(id) }, { projection: { src: 1 } })) as any;
+  return typeof doc?.src === "string" ? doc.src : null;
 }
 
 export async function addPhoto(input: { src: string; cat: PhotoCategory; cap: string }): Promise<string> {
@@ -397,6 +598,261 @@ export async function setHomePhotos(ids: string[]): Promise<void> {
   );
 }
 
+/* ----------------------------- One-time seeding ----------------------------- */
+
+/**
+ * Content that ships with starter data. Each entry is copied into its collection
+ * the first time that collection is read, so the defaults exist as real,
+ * admin-editable rows rather than hard-coded markup nobody can change.
+ *
+ * Add a new seeded section by adding a row here — there is deliberately only one
+ * seeding routine, not one per feature.
+ */
+const SEEDS = {
+  staff: {
+    collection: "staff",
+    /** Flag on the settings doc marking this seed as done. */
+    flag: "staffSeeded",
+    build: () =>
+      DEFAULT_STAFF.map((m) => ({ name: m.name, role: m.role, photo: m.photo, order: m.order, ts: Date.now() })),
+  },
+  routine: {
+    collection: "routine",
+    flag: "routineSeeded",
+    build: () =>
+      DEFAULT_ROUTINE.map((r, i) => ({ title: r.title, subtitle: r.subtitle, order: i, ts: Date.now() })),
+  },
+  faqs: {
+    collection: "faqs",
+    flag: "faqsSeeded",
+    // Both groups share one collection, so one seed covers the About accordion
+    // and the Packages strip. `order` restarts per group.
+    build: () => [
+      ...DEFAULT_FAQS_ABOUT.map((f, i) => ({ group: "about", q: f.q, a: f.a, order: i, ts: Date.now() })),
+      ...DEFAULT_FAQS_PACKAGES.map((f, i) => ({ group: "packages", q: f.q, a: f.a, order: i, ts: Date.now() })),
+    ],
+  },
+} as const;
+
+/**
+ * Copy a section's starter data into its collection, exactly once ever.
+ *
+ * The "done" flag is claimed with a conditional update — atomic in MongoDB — so
+ * two concurrent requests can't both seed and create duplicates. Because the
+ * flag is never cleared, an admin who deliberately deletes every row does NOT
+ * get the defaults resurrected on the next page load.
+ */
+async function ensureSeeded(key: keyof typeof SEEDS): Promise<void> {
+  const spec = SEEDS[key];
+  await ensureSettings();
+  const settings = await col("settings");
+  const claim = await settings.updateOne(
+    { _id: SETTINGS_ID as any, [spec.flag]: { $ne: true } },
+    { $set: { [spec.flag]: true } },
+  );
+  // Already seeded (or another request is seeding right now) — nothing to do.
+  if (claim.modifiedCount === 0) return;
+
+  const c = await col(spec.collection);
+  if ((await c.countDocuments()) > 0) return;
+  await c.insertMany(spec.build() as any[]);
+}
+
+/* ----------------------------- Staff ----------------------------- */
+
+/** Public URL for a team member's photo, served by `/api/staff-photo/[id]`. */
+export function staffPhotoUrl(id: string, ts: number): string {
+  return `/api/staff-photo/${id}?v=${ts}`;
+}
+
+/**
+ * Team metadata WITHOUT the base64 photo — same reasoning as `listPhotos`: an
+ * avatar can be up to 2 MB, and selecting it here would inline every one of them
+ * into the About page HTML on every request. `photo` is a short cacheable URL,
+ * or "" when the member has no photo (the UI then shows coloured initials).
+ */
+export async function listStaff(): Promise<Staff[]> {
+  await ensureSeeded("staff");
+  const c = await col("staff");
+  // Aggregation (not find+projection) because we need a *computed* "does this row
+  // have a photo?" flag without selecting the blob itself — and a projection may
+  // not mix exclusion with computed fields.
+  const docs = await c
+    .aggregate([
+      { $sort: { order: 1 } },
+      {
+        $project: {
+          name: 1,
+          role: 1,
+          order: 1,
+          ts: 1,
+          hasPhoto: { $gt: [{ $strLenCP: { $ifNull: ["$photo", ""] } }, 0] },
+        },
+      },
+    ])
+    .toArray();
+  return docs.map((d: any) => ({
+    id: d._id.toString(),
+    name: d.name ?? "",
+    role: d.role ?? "",
+    photo: d.hasPhoto ? staffPhotoUrl(d._id.toString(), d.ts ?? 0) : "",
+    order: d.order ?? 0,
+    ts: d.ts ?? Date.now(),
+  }));
+}
+
+/** Raw base64 photo for one team member. Only `/api/staff-photo/[id]` needs this. */
+export async function getStaffPhoto(id: string): Promise<string | null> {
+  if (!ObjectId.isValid(id)) return null;
+  const c = await col("staff");
+  const doc = (await c.findOne({ _id: new ObjectId(id) }, { projection: { photo: 1 } })) as any;
+  return typeof doc?.photo === "string" && doc.photo ? doc.photo : null;
+}
+
+export async function addStaff(input: { name: string; role: string; photo?: string }): Promise<string> {
+  const c = await col("staff");
+  // New members go to the end of the grid.
+  const last = await c.find({}).sort({ order: -1 }).limit(1).toArray();
+  const maxOrder = last.length ? (last[0] as any).order ?? 0 : -1;
+  const res = await c.insertOne({
+    name: input.name,
+    role: input.role,
+    photo: input.photo ?? "",
+    order: maxOrder + 1,
+    ts: Date.now(),
+  } as any);
+  return res.insertedId.toString();
+}
+
+export async function updateStaff(
+  id: string,
+  patch: { name?: string; role?: string; photo?: string },
+): Promise<void> {
+  const c = await col("staff");
+  const $set: Record<string, unknown> = {};
+  if (typeof patch.name === "string") $set.name = patch.name;
+  if (typeof patch.role === "string") $set.role = patch.role;
+  // "" is meaningful here: it clears the photo and restores the initials avatar.
+  if (typeof patch.photo === "string") $set.photo = patch.photo;
+  if (Object.keys($set).length) await c.updateOne({ _id: new ObjectId(id) }, { $set });
+}
+
+export async function deleteStaff(id: string): Promise<void> {
+  const c = await col("staff");
+  await c.deleteOne({ _id: new ObjectId(id) });
+}
+
+export async function reorderStaff(orderedIds: string[]): Promise<void> {
+  const c = await col("staff");
+  await Promise.all(
+    orderedIds.map((id, i) => c.updateOne({ _id: new ObjectId(id) }, { $set: { order: i } })),
+  );
+}
+
+/* ----------------------------- Daily routine ----------------------------- */
+
+export async function listRoutine(): Promise<RoutineItem[]> {
+  await ensureSeeded("routine");
+  const c = await col("routine");
+  const docs = await c.find({}).sort({ order: 1 }).toArray();
+  return docs.map((d: any) => ({
+    id: d._id.toString(),
+    title: d.title ?? "",
+    subtitle: d.subtitle ?? "",
+    order: d.order ?? 0,
+    ts: d.ts ?? Date.now(),
+  }));
+}
+
+export async function addRoutine(input: { title: string; subtitle?: string }): Promise<string> {
+  const c = await col("routine");
+  const last = await c.find({}).sort({ order: -1 }).limit(1).toArray();
+  const maxOrder = last.length ? (last[0] as any).order ?? 0 : -1;
+  const res = await c.insertOne({
+    title: input.title,
+    subtitle: input.subtitle ?? "",
+    order: maxOrder + 1,
+    ts: Date.now(),
+  } as any);
+  return res.insertedId.toString();
+}
+
+export async function updateRoutine(
+  id: string,
+  patch: { title?: string; subtitle?: string },
+): Promise<void> {
+  const c = await col("routine");
+  const $set: Record<string, unknown> = {};
+  if (typeof patch.title === "string") $set.title = patch.title;
+  // "" is meaningful — it clears the supporting line.
+  if (typeof patch.subtitle === "string") $set.subtitle = patch.subtitle;
+  if (Object.keys($set).length) await c.updateOne({ _id: new ObjectId(id) }, { $set });
+}
+
+export async function deleteRoutine(id: string): Promise<void> {
+  const c = await col("routine");
+  await c.deleteOne({ _id: new ObjectId(id) });
+}
+
+export async function reorderRoutine(orderedIds: string[]): Promise<void> {
+  const c = await col("routine");
+  await Promise.all(
+    orderedIds.map((id, i) => c.updateOne({ _id: new ObjectId(id) }, { $set: { order: i } })),
+  );
+}
+
+/* ----------------------------- FAQs ----------------------------- */
+
+export async function listFaqs(): Promise<Faq[]> {
+  await ensureSeeded("faqs");
+  const c = await col("faqs");
+  const docs = await c.find({}).sort({ order: 1 }).toArray();
+  return docs.map((d: any) => ({
+    id: d._id.toString(),
+    group: (d.group as FaqGroup) ?? "about",
+    q: d.q ?? "",
+    a: d.a ?? "",
+    order: d.order ?? 0,
+    ts: d.ts ?? Date.now(),
+  }));
+}
+
+export async function addFaq(input: { group: FaqGroup; q: string; a?: string }): Promise<string> {
+  const c = await col("faqs");
+  // Order runs per group, so a new entry lands at the end of its own list.
+  const last = await c.find({ group: input.group }).sort({ order: -1 }).limit(1).toArray();
+  const maxOrder = last.length ? (last[0] as any).order ?? 0 : -1;
+  const res = await c.insertOne({
+    group: input.group,
+    q: input.q,
+    a: input.a ?? "",
+    order: maxOrder + 1,
+    ts: Date.now(),
+  } as any);
+  return res.insertedId.toString();
+}
+
+export async function updateFaq(id: string, patch: { q?: string; a?: string }): Promise<void> {
+  const c = await col("faqs");
+  const $set: Record<string, unknown> = {};
+  if (typeof patch.q === "string") $set.q = patch.q;
+  if (typeof patch.a === "string") $set.a = patch.a;
+  if (Object.keys($set).length) await c.updateOne({ _id: new ObjectId(id) }, { $set });
+}
+
+export async function deleteFaq(id: string): Promise<void> {
+  const c = await col("faqs");
+  await c.deleteOne({ _id: new ObjectId(id) });
+}
+
+/** Reorder within one group — ids must all belong to that group. */
+export async function reorderFaqs(orderedIds: string[]): Promise<void> {
+  const c = await col("faqs");
+  await Promise.all(
+    orderedIds.map((id, i) => c.updateOne({ _id: new ObjectId(id) }, { $set: { order: i } })),
+  );
+}
+
 /* ----------------------------- Testimonials ----------------------------- */
 
 export async function listTestimonials(): Promise<Testimonial[]> {
@@ -409,13 +865,16 @@ export async function listTestimonials(): Promise<Testimonial[]> {
     quote: d.quote ?? "",
     duration: d.duration ?? "1:00",
     video: (d.video as VideoRef) ?? null,
+    home: !!d.home,
     ts: d.ts ?? Date.now(),
   }));
 }
 
-export async function addTestimonial(input: Omit<Testimonial, "id" | "ts">): Promise<string> {
+export async function addTestimonial(
+  input: Omit<Testimonial, "id" | "ts" | "home"> & { home?: boolean },
+): Promise<string> {
   const c = await col("testimonials");
-  const res = await c.insertOne({ ...input, video: input.video ?? null, ts: Date.now() } as any);
+  const res = await c.insertOne({ ...input, video: input.video ?? null, home: !!input.home, ts: Date.now() } as any);
   return res.insertedId.toString();
 }
 
@@ -437,4 +896,22 @@ export async function getTestimonialVideo(id: string): Promise<VideoRef | null> 
 export async function deleteTestimonial(id: string): Promise<void> {
   const c = await col("testimonials");
   await c.deleteOne({ _id: new ObjectId(id) });
+}
+
+/**
+ * Publish the exact set of testimonials chosen for the home page video teaser in one
+ * shot, mirroring `setHomePhotos` — the given ids become `home: true`, every other
+ * testimonial becomes `home: false`.
+ */
+export async function setHomeTestimonials(ids: string[]): Promise<void> {
+  const c = await col("testimonials");
+  const wanted = new Set(ids);
+  const docs = (await c.find({}, { projection: { home: 1 } }).toArray()) as any[];
+  await Promise.all(
+    docs.map((d) => {
+      const shouldHome = wanted.has(d._id.toString());
+      if (!!d.home === shouldHome) return Promise.resolve();
+      return c.updateOne({ _id: d._id }, { $set: { home: shouldHome } });
+    }),
+  );
 }

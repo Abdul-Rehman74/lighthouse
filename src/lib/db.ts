@@ -24,8 +24,28 @@ const globalForMongo = globalThis as unknown as {
 function clientPromise(): Promise<MongoClient> {
   if (!uri) throw new Error("MONGODB_URI is not configured.");
   if (!globalForMongo._mongoClientPromise) {
-    const client = new MongoClient(uri, { maxPoolSize: 10 });
-    globalForMongo._mongoClientPromise = client.connect();
+    const client = new MongoClient(uri, {
+      maxPoolSize: 10,
+      // Fail fast instead of hanging. The driver defaults to a 30s server
+      // selection window, and a stalled SRV/DNS lookup stacks on top of that —
+      // which turns a brief network blip into multi-minute page loads while
+      // every server component waits its turn. Callers already fall back to
+      // static content on error, so a quick failure renders far better than a hang.
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+    });
+    // Never cache a *rejected* connection promise. Caching the promise is what
+    // lets concurrent cold-start requests share one connect, but if that first
+    // connect fails (DNS blip, Atlas briefly unreachable) the rejection would
+    // otherwise be replayed to every later request until the process restarts.
+    // Clearing it here lets the next request retry a fresh connection.
+    const pending: Promise<MongoClient> = client.connect().catch((err) => {
+      if (globalForMongo._mongoClientPromise === pending) {
+        globalForMongo._mongoClientPromise = undefined;
+      }
+      throw err;
+    });
+    globalForMongo._mongoClientPromise = pending;
   }
   return globalForMongo._mongoClientPromise;
 }

@@ -167,49 +167,7 @@
   }
 }
 
-/* ---- hero floating balloons + study objects ---- */
-.balloon {
-  position: absolute;
-  width: var(--bw, 44px);
-  aspect-ratio: 0.82;
-  background: var(--bc, #f47a4f);
-  border-radius: 50% 50% 49% 49% / 56% 56% 44% 44%;
-  box-shadow: inset -6px -7px 0 rgba(0, 0, 0, 0.06);
-  z-index: 2;
-  animation: balloonfloat var(--d, 5.5s) ease-in-out infinite;
-  animation-delay: var(--dl, 0s);
-  will-change: transform;
-}
-.balloon::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 98%;
-  width: 7px;
-  height: 6px;
-  background: var(--bc, #f47a4f);
-  transform: translateX(-50%) rotate(45deg);
-}
-.balloon::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  width: 1.5px;
-  height: 36px;
-  margin-top: 5px;
-  background: rgba(31, 42, 55, 0.28);
-  transform: translateX(-50%);
-}
-@keyframes balloonfloat {
-  0%,
-  100% {
-    transform: translateY(0) rotate(var(--r, -4deg));
-  }
-  50% {
-    transform: translateY(-15px) rotate(calc(var(--r, -4deg) * -0.6));
-  }
-}
+/* ---- hero floating study objects ---- */
 .study {
   position: absolute;
   z-index: 2;
@@ -251,7 +209,6 @@
   .spark {
     display: none !important;
   }
-  .balloon,
   .study {
     animation: none !important;
   }

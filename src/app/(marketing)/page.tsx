@@ -5,6 +5,7 @@ import { ChipBelt } from "@/components/organisms/home/ChipBelt";
 import { PillarsHome } from "@/components/organisms/home/PillarsHome";
 import { PromisePanel } from "@/components/organisms/home/PromisePanel";
 import { ScrapbookGrid } from "@/components/organisms/home/ScrapbookGrid";
+import { HomeVideoTestimonials } from "@/components/organisms/home/HomeVideoTestimonials";
 import { LearningLoungePeek } from "@/components/organisms/home/LearningLoungePeek";
 import { PackagesPeek } from "@/components/organisms/home/PackagesPeek";
 import { TrialCTA } from "@/components/organisms/home/TrialCTA";
@@ -23,6 +24,9 @@ export default function HomePage() {
       </Reveal>
       <Reveal>
         <ScrapbookGrid />
+      </Reveal>
+      <Reveal>
+        <HomeVideoTestimonials />
       </Reveal>
       <Reveal>
         <LearningLoungePeek />

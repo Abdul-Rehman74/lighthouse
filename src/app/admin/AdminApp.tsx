@@ -8,8 +8,14 @@ import type {
   Photo,
   PhotoCategory,
   Testimonial,
+  Staff,
+  RoutineItem,
+  Faq,
+  FaqGroup,
   AdminSettings,
   Package,
+  ComparisonColumn,
+  ComparisonRow,
 } from "@/lib/admin-data";
 import { type VideoRef, parseVideoLink } from "@/lib/video";
 import { LighthouseMark, Icons, KPI_ICONS, PlayIcon, StarIcon, HomeIcon } from "./icons";
@@ -87,22 +93,53 @@ const timeAgo = (ts: number) => {
 };
 const waLink = (phone: string) => `https://wa.me/${phone.replace(/[^0-9]/g, "")}`;
 
-type View = "dashboard" | "submissions" | "gallery" | "testimonials" | "packages" | "settings";
+type View = "dashboard" | "submissions" | "gallery" | "testimonials" | "team" | "routine" | "faqs" | "packages" | "settings";
 const NAV: { v: View; label: string; hand: string; icon: React.ReactNode }[] = [
   { v: "dashboard", label: "Dashboard", hand: "welcome back ✿", icon: Icons.dashboard },
   { v: "submissions", label: "Submissions", hand: "trial bookings", icon: Icons.submissions },
   { v: "gallery", label: "Gallery", hand: "photo manager", icon: Icons.gallery },
   { v: "testimonials", label: "Testimonials", hand: "parents say", icon: Icons.testimonials },
+  { v: "team", label: "Team", hand: "the people", icon: Icons.staff },
+  { v: "routine", label: "Daily routine", hand: "a typical day", icon: Icons.routine },
+  { v: "faqs", label: "FAQs", hand: "parents ask", icon: Icons.faq },
   { v: "packages", label: "Packages", hand: "pricing", icon: Icons.packages },
   { v: "settings", label: "Settings", hand: "preferences", icon: Icons.settings },
 ];
 
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2MB per photo (stored as base64 in MongoDB)
 
+/**
+ * Tracks which rows in a list have edits that haven't been written to the DB yet.
+ *
+ * Text fields deliberately do NOT autosave — the section shows an explicit
+ * "Save changes" button instead, so it's obvious when the live site has been
+ * updated. Discrete actions (add, delete, reorder, photo upload) still save
+ * immediately, since those have their own visible feedback.
+ */
+function useDirtyRows() {
+  const [ids, setIds] = useState<Set<string>>(new Set());
+  return {
+    ids,
+    count: ids.size,
+    mark: (id: string) => setIds((s) => (s.has(id) ? s : new Set(s).add(id))),
+    drop: (id: string) =>
+      setIds((s) => {
+        if (!s.has(id)) return s;
+        const next = new Set(s);
+        next.delete(id);
+        return next;
+      }),
+    clear: () => setIds(new Set()),
+  };
+}
+
 interface Props {
   initialSubmissions: Submission[];
   initialPhotos: Photo[];
   initialTestimonials: Testimonial[];
+  initialStaff: Staff[];
+  initialRoutine: RoutineItem[];
+  initialFaqs: Faq[];
   initialSettings: AdminSettings;
 }
 
@@ -111,11 +148,14 @@ type DrawerState =
   | { kind: "testimonial"; id: string | null }
   | null;
 
-export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonials, initialSettings }: Props) {
+export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonials, initialStaff, initialRoutine, initialFaqs, initialSettings }: Props) {
   const router = useRouter();
   const [subs, setSubs] = useState(initialSubmissions);
   const [photos, setPhotos] = useState(initialPhotos);
   const [testis, setTestis] = useState(initialTestimonials);
+  const [staff, setStaff] = useState(initialStaff);
+  const [routine, setRoutine] = useState(initialRoutine);
+  const [faqs, setFaqs] = useState(initialFaqs);
   const [settings, setSettings] = useState(initialSettings);
 
   const [view, setView] = useState<View>("dashboard");
@@ -279,6 +319,251 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
     actions.removeTestimonial(id).catch(() => showToast("Couldn't remove"));
     showToast("Removed");
   };
+  const toggleHomeTesti = (id: string) => {
+    let next = false;
+    setTestis((arr) => arr.map((t) => (t.id === id ? ((next = !t.home), { ...t, home: next }) : t)));
+    actions.saveTestimonial(id, { home: next }).catch(() => showToast("Couldn't update"));
+    showToast(next ? "Added to home page" : "Removed from home page");
+  };
+  // Re-publish the whole home selection at once, mirroring the photo "Update home pictures" button.
+  const [savingHomeTesti, setSavingHomeTesti] = useState(false);
+  const updateHomeTestis = () => {
+    const ids = testis.filter((t) => t.home).map((t) => t.id);
+    setSavingHomeTesti(true);
+    actions
+      .syncHomeTestimonials(ids)
+      .then(() => showToast(`Home page updated — ${ids.length} video${ids.length === 1 ? "" : "s"}`))
+      .catch(() => showToast("Couldn't update home page"))
+      .finally(() => setSavingHomeTesti(false));
+  };
+
+  /* ----------------------------- team ----------------------------- */
+
+  const staffFileRef = useRef<HTMLInputElement>(null);
+  // Which member's photo slot the hidden file input is currently filling.
+  const staffPhotoTarget = useRef<string | null>(null);
+  const staffDragId = useRef<string | null>(null);
+  const [staffDragging, setStaffDragging] = useState<string | null>(null);
+  const [staffOverId, setStaffOverId] = useState<string | null>(null);
+
+  const addMember = async () => {
+    try {
+      const id = await actions.createStaff({ name: "New member", role: "" });
+      setStaff((arr) => [...arr, { id, name: "New member", role: "", photo: "", order: arr.length, ts: Date.now() }]);
+      showToast("Member added");
+    } catch {
+      showToast("Couldn't add member");
+    }
+  };
+  const dirtyStaff = useDirtyRows();
+  const editMember = (id: string, patch: Partial<Staff>) => {
+    setStaff((arr) => arr.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+    dirtyStaff.mark(id);
+  };
+  const saveMembers = async () => {
+    const ids = [...dirtyStaff.ids];
+    try {
+      await Promise.all(
+        ids.map((id) => {
+          const m = staff.find((s) => s.id === id);
+          return m ? actions.saveStaff(id, { name: m.name, role: m.role }) : Promise.resolve();
+        }),
+      );
+      dirtyStaff.clear();
+      showToast(`Team updated — ${ids.length} change${ids.length === 1 ? "" : "s"}`);
+    } catch {
+      showToast("Couldn't save changes");
+    }
+  };
+  const deleteMember = (id: string) => {
+    setStaff((arr) => arr.filter((s) => s.id !== id));
+    dirtyStaff.drop(id);
+    actions.removeStaff(id).catch(() => showToast("Couldn't delete"));
+    showToast("Member removed");
+  };
+  const pickStaffPhoto = (id: string) => {
+    staffPhotoTarget.current = id;
+    staffFileRef.current?.click();
+  };
+  const onStaffPhoto = (file: File) => {
+    const id = staffPhotoTarget.current;
+    if (!id) return;
+    if (!file.type.startsWith("image/")) {
+      showToast("Please choose an image");
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      showToast("Image is over 2MB");
+      return;
+    }
+    const r = new FileReader();
+    r.onload = (e) => {
+      const photo = String(e.target?.result || "");
+      editMember(id, { photo });
+      actions.saveStaff(id, { photo }).catch(() => showToast("Couldn't save photo"));
+      showToast("Photo updated");
+    };
+    r.readAsDataURL(file);
+  };
+  const clearStaffPhoto = (id: string) => {
+    editMember(id, { photo: "" });
+    actions.saveStaff(id, { photo: "" }).catch(() => showToast("Couldn't remove photo"));
+    showToast("Photo removed");
+  };
+  const onStaffDrop = (targetId: string) => {
+    const from = staff.findIndex((s) => s.id === staffDragId.current);
+    const to = staff.findIndex((s) => s.id === targetId);
+    setStaffOverId(null);
+    setStaffDragging(null);
+    if (from < 0 || to < 0 || from === to) return;
+    const next = [...staff];
+    const [m] = next.splice(from, 1);
+    next.splice(to, 0, m);
+    setStaff(next);
+    actions.saveStaffOrder(next.map((s) => s.id)).catch(() => showToast("Couldn't save order"));
+    showToast("Order updated");
+  };
+
+  const [staffHeading, setStaffHeading] = useState(initialSettings.staffHeading ?? "");
+  const [staffNote, setStaffNote] = useState(initialSettings.staffNote ?? "");
+  const [staffFootnote, setStaffFootnote] = useState(initialSettings.staffFootnote ?? "");
+  const saveStaffCopy = () => {
+    setSettings((s) => ({ ...s, staffHeading, staffNote, staffFootnote }));
+    actions
+      .saveSettings({ staffHeading, staffNote, staffFootnote })
+      .then(() => showToast("Team text saved"))
+      .catch(() => showToast("Couldn't save"));
+  };
+
+  /* ----------------------------- daily routine ----------------------------- */
+
+  const routineDragId = useRef<string | null>(null);
+  const [routineDragging, setRoutineDragging] = useState<string | null>(null);
+  const [routineOverId, setRoutineOverId] = useState<string | null>(null);
+
+  const addActivity = async () => {
+    try {
+      const id = await actions.createRoutine({ title: "New activity" });
+      setRoutine((arr) => [...arr, { id, title: "New activity", subtitle: "", order: arr.length, ts: Date.now() }]);
+      showToast("Activity added");
+    } catch {
+      showToast("Couldn't add activity");
+    }
+  };
+  const dirtyRoutine = useDirtyRows();
+  const editActivity = (id: string, patch: Partial<RoutineItem>) => {
+    setRoutine((arr) => arr.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+    dirtyRoutine.mark(id);
+  };
+  const saveActivities = async () => {
+    const ids = [...dirtyRoutine.ids];
+    try {
+      await Promise.all(
+        ids.map((id) => {
+          const r = routine.find((x) => x.id === id);
+          return r ? actions.saveRoutine(id, { title: r.title, subtitle: r.subtitle }) : Promise.resolve();
+        }),
+      );
+      dirtyRoutine.clear();
+      showToast(`Routine updated — ${ids.length} change${ids.length === 1 ? "" : "s"}`);
+    } catch {
+      showToast("Couldn't save changes");
+    }
+  };
+  const deleteActivity = (id: string) => {
+    setRoutine((arr) => arr.filter((r) => r.id !== id));
+    dirtyRoutine.drop(id);
+    actions.removeRoutine(id).catch(() => showToast("Couldn't delete"));
+    showToast("Activity removed");
+  };
+  const onRoutineDrop = (targetId: string) => {
+    const from = routine.findIndex((r) => r.id === routineDragId.current);
+    const to = routine.findIndex((r) => r.id === targetId);
+    setRoutineOverId(null);
+    setRoutineDragging(null);
+    if (from < 0 || to < 0 || from === to) return;
+    const next = [...routine];
+    const [m] = next.splice(from, 1);
+    next.splice(to, 0, m);
+    setRoutine(next);
+    actions.saveRoutineOrder(next.map((r) => r.id)).catch(() => showToast("Couldn't save order"));
+    showToast("Order updated");
+  };
+
+  /* ----------------------------- faqs ----------------------------- */
+
+  const [faqGroup, setFaqGroup] = useState<FaqGroup>("about");
+  const faqDragId = useRef<string | null>(null);
+  const [faqDragging, setFaqDragging] = useState<string | null>(null);
+  const [faqOverId, setFaqOverId] = useState<string | null>(null);
+  // Ordering and drag-and-drop operate within the selected group only.
+  const visibleFaqs = faqs.filter((f) => f.group === faqGroup);
+
+  const addFaqItem = async () => {
+    try {
+      const id = await actions.createFaq({ group: faqGroup, q: "New question" });
+      setFaqs((arr) => [
+        ...arr,
+        { id, group: faqGroup, q: "New question", a: "", order: visibleFaqs.length, ts: Date.now() },
+      ]);
+      showToast("Question added");
+    } catch {
+      showToast("Couldn't add question");
+    }
+  };
+  const dirtyFaqs = useDirtyRows();
+  const editFaq = (id: string, patch: Partial<Faq>) => {
+    setFaqs((arr) => arr.map((f) => (f.id === id ? { ...f, ...patch } : f)));
+    dirtyFaqs.mark(id);
+  };
+  const saveFaqItems = async () => {
+    const ids = [...dirtyFaqs.ids];
+    try {
+      await Promise.all(
+        ids.map((id) => {
+          const f = faqs.find((x) => x.id === id);
+          return f ? actions.saveFaq(id, { q: f.q, a: f.a }) : Promise.resolve();
+        }),
+      );
+      dirtyFaqs.clear();
+      showToast(`FAQs updated — ${ids.length} change${ids.length === 1 ? "" : "s"}`);
+    } catch {
+      showToast("Couldn't save changes");
+    }
+  };
+  const deleteFaqItem = (id: string) => {
+    setFaqs((arr) => arr.filter((f) => f.id !== id));
+    dirtyFaqs.drop(id);
+    actions.removeFaq(id).catch(() => showToast("Couldn't delete"));
+    showToast("Question removed");
+  };
+  const onFaqDrop = (targetId: string) => {
+    const list = visibleFaqs;
+    const from = list.findIndex((f) => f.id === faqDragId.current);
+    const to = list.findIndex((f) => f.id === targetId);
+    setFaqOverId(null);
+    setFaqDragging(null);
+    if (from < 0 || to < 0 || from === to) return;
+    const next = [...list];
+    const [m] = next.splice(from, 1);
+    next.splice(to, 0, m);
+    // Rebuild the full list keeping the other group untouched.
+    setFaqs((arr) => [...arr.filter((f) => f.group !== faqGroup), ...next]);
+    actions.saveFaqOrder(next.map((f) => f.id)).catch(() => showToast("Couldn't save order"));
+    showToast("Order updated");
+  };
+
+  /* ----------------------------- unsaved-edit guard ----------------------------- */
+
+  // Declared after the three dirty trackers above so they're all initialised.
+  const unsavedCount = dirtyStaff.count + dirtyRoutine.count + dirtyFaqs.count;
+  useEffect(() => {
+    if (unsavedCount === 0) return;
+    // Browsers show their own generic "Leave site?" prompt; preventDefault is what triggers it.
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [unsavedCount]);
 
   /* ----------------------------- settings ----------------------------- */
 
@@ -292,6 +577,8 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
   const [setFb, setSetFb] = useState(initialSettings.social?.facebook ?? "");
   const [pkgs, setPkgs] = useState<Package[]>(initialSettings.packages ?? []);
   const [pkgNote, setPkgNote] = useState(initialSettings.packagesNote ?? "");
+  const [cmpCols, setCmpCols] = useState<ComparisonColumn[]>(initialSettings.comparisonColumns ?? []);
+  const [cmpRows, setCmpRows] = useState<ComparisonRow[]>(initialSettings.comparisonRows ?? []);
 
   const updatePkg = (i: number, patch: Partial<Package>) =>
     setPkgs((arr) => arr.map((p, j) => (j === i ? { ...p, ...patch } : p)));
@@ -314,6 +601,35 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
     actions
       .saveSettings({ packages: pkgs, packagesNote: pkgNote })
       .then(() => showToast("Packages saved"))
+      .catch(() => showToast("Couldn't save"));
+  };
+
+  /* ----------------------------- comparison table ----------------------------- */
+
+  const updateCmpCol = (i: number, patch: Partial<ComparisonColumn>) =>
+    setCmpCols((arr) => arr.map((c, j) => (j === i ? { ...c, ...patch } : c)));
+  const addCmpCol = () => {
+    setCmpCols((arr) => [...arr, { label: "New column", highlight: false }]);
+    setCmpRows((arr) => arr.map((r) => ({ ...r, values: [...r.values, ""] })));
+  };
+  const removeCmpCol = (i: number) => {
+    setCmpCols((arr) => arr.filter((_, j) => j !== i));
+    setCmpRows((arr) => arr.map((r) => ({ ...r, values: r.values.filter((_, j) => j !== i) })));
+  };
+  const updateCmpRow = (i: number, patch: Partial<ComparisonRow>) =>
+    setCmpRows((arr) => arr.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  const updateCmpCell = (ri: number, ci: number, value: string) =>
+    setCmpRows((arr) =>
+      arr.map((r, j) => (j === ri ? { ...r, values: r.values.map((v, k) => (k === ci ? value : v)) } : r)),
+    );
+  const addCmpRow = () =>
+    setCmpRows((arr) => [...arr, { label: "New row", values: cmpCols.map(() => "") }]);
+  const removeCmpRow = (i: number) => setCmpRows((arr) => arr.filter((_, j) => j !== i));
+  const saveComparisonTable = () => {
+    setSettings((s) => ({ ...s, comparisonColumns: cmpCols, comparisonRows: cmpRows }));
+    actions
+      .saveSettings({ comparisonColumns: cmpCols, comparisonRows: cmpRows })
+      .then(() => showToast("Comparison table saved"))
       .catch(() => showToast("Couldn't save"));
   };
 
@@ -888,10 +1204,26 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                   </span>
                   <h2>Video testimonials</h2>
                 </div>
-                <button className="btn-s bs-sun" onClick={() => setDrawer({ kind: "testimonial", id: null })}>
-                  {Icons.plus}Add testimonial
-                </button>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    className="btn-s bs-ink"
+                    disabled={savingHomeTesti}
+                    onClick={updateHomeTestis}
+                    title="Publish the videos marked with the home icon to the public home page"
+                  >
+                    {savingHomeTesti
+                      ? "Updating…"
+                      : `⌂ Update home videos (${testis.filter((t) => t.home).length})`}
+                  </button>
+                  <button className="btn-s bs-sun" onClick={() => setDrawer({ kind: "testimonial", id: null })}>
+                    {Icons.plus}Add testimonial
+                  </button>
+                </div>
               </div>
+              <p className="d" style={{ color: "var(--ink-500)", fontSize: 13, marginBottom: 18 }}>
+                Mark a testimonial with the home icon to feature it in the video teaser on the home page —
+                just like featured photos, nothing shows there until you pick one.
+              </p>
               <div className="testgrid">
                 {testis.map((t) => (
                   <div className="tcard" key={t.id}>
@@ -901,6 +1233,11 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                         {t.duration}
                       </span>{" "}
                       video clip
+                      {t.home && (
+                        <span style={{ marginLeft: "auto", background: "#5BB484", color: "#fff", borderRadius: 6, padding: "3px 8px", fontWeight: 800, fontSize: 10 }}>
+                          ⌂ Home
+                        </span>
+                      )}
                     </div>
                     <div className="q">“{t.quote}”</div>
                     <div className="meta">
@@ -911,6 +1248,13 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                       </div>
                     </div>
                     <div className="acts">
+                      <button
+                        className={`rowbtn${t.home ? " on" : ""}`}
+                        title={t.home ? "Showing on home page" : "Show on home page"}
+                        onClick={() => toggleHomeTesti(t.id)}
+                      >
+                        <HomeIcon filled={t.home} />
+                      </button>
                       <button className="btn-s bs-ghost" style={{ flex: 1, justifyContent: "center", padding: 9 }} onClick={() => setDrawer({ kind: "testimonial", id: t.id })}>
                         {Icons.edit}Edit
                       </button>
@@ -925,6 +1269,348 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                     <div className="ei">💬</div>
                     <b>No testimonials yet</b>
                     Add one with the button above.
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* ---------------- TEAM ---------------- */}
+          {view === "team" && (
+            <section>
+              <div className="sect-head">
+                <div>
+                  <span className="hand" style={{ color: "var(--coral)", fontSize: 15 }}>
+                    the people
+                  </span>
+                  <h2>Team</h2>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                  {dirtyStaff.count > 0 && (
+                    <button className="btn-s bs-ink savebtn" onClick={saveMembers}>
+                      {Icons.check}Save {dirtyStaff.count} change{dirtyStaff.count === 1 ? "" : "s"}
+                    </button>
+                  )}
+                  <button className="btn-s bs-sun" onClick={addMember}>
+                    {Icons.plus}Add member
+                  </button>
+                </div>
+              </div>
+              <p className="d" style={{ color: "var(--ink-500)", fontSize: 13, marginBottom: 18 }}>
+                Shown on the About page. Drag a card to reorder. Upload a photo to replace the
+                initials circle — leave it empty and the coloured initials are used instead.
+              </p>
+
+              <div className="card set-card" style={{ marginBottom: 18 }}>
+                <div className="pkg-head">
+                  <h3 style={{ margin: 0 }}>Section text</h3>
+                  <button className="btn-s bs-ink" onClick={saveStaffCopy}>
+                    Save text
+                  </button>
+                </div>
+                <div className="field">
+                  <label>Heading (above the team)</label>
+                  <input value={staffHeading} placeholder="Meet our Team" onChange={(e) => setStaffHeading(e.target.value)} />
+                </div>
+                <div className="field">
+                  <label>Note (beside the heading)</label>
+                  <input value={staffNote} placeholder="Every team member is trained in…" onChange={(e) => setStaffNote(e.target.value)} />
+                </div>
+                <div className="field" style={{ marginBottom: 0 }}>
+                  <label>Footnote (below the team)</label>
+                  <input value={staffFootnote} placeholder="+ 16 more teachers…" onChange={(e) => setStaffFootnote(e.target.value)} />
+                </div>
+              </div>
+
+              <input
+                ref={staffFileRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => {
+                  if (e.target.files?.[0]) onStaffPhoto(e.target.files[0]);
+                  e.target.value = "";
+                }}
+              />
+
+              <div className="staffgrid">
+                {staff.map((m) => (
+                  <div
+                    key={m.id}
+                    className={`scard${staffDragging === m.id ? " dragging" : ""}${staffOverId === m.id ? " over" : ""}${dirtyStaff.ids.has(m.id) ? " unsaved" : ""}`}
+                    draggable
+                    onDragStart={() => {
+                      staffDragId.current = m.id;
+                      setStaffDragging(m.id);
+                    }}
+                    onDragEnd={() => {
+                      setStaffDragging(null);
+                      setStaffOverId(null);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (m.id !== staffDragId.current) setStaffOverId(m.id);
+                    }}
+                    onDragLeave={() => setStaffOverId((o) => (o === m.id ? null : o))}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      onStaffDrop(m.id);
+                    }}
+                  >
+                    <div className="stop">
+                      <button
+                        className="savatar"
+                        onClick={() => pickStaffPhoto(m.id)}
+                        title={m.photo ? "Change photo" : "Upload a photo"}
+                      >
+                        {m.photo ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={m.photo} alt={m.name} />
+                        ) : (
+                          <span style={{ background: avColor(m.name) }}>{initials(m.name)}</span>
+                        )}
+                        <i className="cam">{Icons.image}</i>
+                      </button>
+                      <div className="grip" title="Drag to reorder">
+                        {Icons.grip}
+                      </div>
+                    </div>
+                    <div className="field" style={{ marginBottom: 10 }}>
+                      <label>Name</label>
+                      <input
+                        value={m.name}
+                        placeholder="Ms. Amira Malik"
+                        onChange={(e) => editMember(m.id, { name: e.target.value })}
+                      />
+                    </div>
+                    <div className="field" style={{ marginBottom: 12 }}>
+                      <label>Role</label>
+                      <input
+                        value={m.role}
+                        placeholder="Founder and Principal"
+                        onChange={(e) => editMember(m.id, { role: e.target.value })}
+                      />
+                    </div>
+                    <div className="sacts">
+                      <button className="btn-s bs-ghost" style={{ flex: 1, justifyContent: "center", padding: 9 }} onClick={() => pickStaffPhoto(m.id)}>
+                        {Icons.upload}Photo
+                      </button>
+                      {m.photo && (
+                        <button className="btn-s bs-ghost" style={{ padding: 9 }} title="Remove photo" onClick={() => clearStaffPhoto(m.id)}>
+                          Clear
+                        </button>
+                      )}
+                      <button className="delbtn" title="Remove member" onClick={() => deleteMember(m.id)}>
+                        {Icons.trash}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {!staff.length && (
+                  <div className="empty" style={{ gridColumn: "1/-1" }}>
+                    <div className="ei">👩‍🏫</div>
+                    <b>No team members</b>
+                    The team section is hidden on the About page until you add someone.
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* ---------------- DAILY ROUTINE ---------------- */}
+          {view === "routine" && (
+            <section>
+              <div className="sect-head">
+                <div>
+                  <span className="hand" style={{ color: "var(--coral)", fontSize: 15 }}>
+                    a typical day
+                  </span>
+                  <h2>Daily routine</h2>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                  {dirtyRoutine.count > 0 && (
+                    <button className="btn-s bs-ink savebtn" onClick={saveActivities}>
+                      {Icons.check}Save {dirtyRoutine.count} change{dirtyRoutine.count === 1 ? "" : "s"}
+                    </button>
+                  )}
+                  <button className="btn-s bs-sun" onClick={addActivity}>
+                    {Icons.plus}Add activity
+                  </button>
+                </div>
+              </div>
+              <p className="d" style={{ color: "var(--ink-500)", fontSize: 13, marginBottom: 18 }}>
+                The activity cards on the About page. Drag to reorder — card colours cycle
+                automatically. The second line is optional; leave it empty to show just the activity.
+              </p>
+              <div className="staffgrid">
+                {routine.map((r) => (
+                  <div
+                    key={r.id}
+                    className={`scard${routineDragging === r.id ? " dragging" : ""}${routineOverId === r.id ? " over" : ""}${dirtyRoutine.ids.has(r.id) ? " unsaved" : ""}`}
+                    draggable
+                    onDragStart={() => {
+                      routineDragId.current = r.id;
+                      setRoutineDragging(r.id);
+                    }}
+                    onDragEnd={() => {
+                      setRoutineDragging(null);
+                      setRoutineOverId(null);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (r.id !== routineDragId.current) setRoutineOverId(r.id);
+                    }}
+                    onDragLeave={() => setRoutineOverId((o) => (o === r.id ? null : o))}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      onRoutineDrop(r.id);
+                    }}
+                  >
+                    <div className="stop" style={{ marginBottom: 8 }}>
+                      <span className="rnum">{routine.indexOf(r) + 1}</span>
+                      <div className="grip" title="Drag to reorder">
+                        {Icons.grip}
+                      </div>
+                    </div>
+                    <div className="field" style={{ marginBottom: 10 }}>
+                      <label>Activity</label>
+                      <input
+                        value={r.title}
+                        placeholder="Circle time"
+                        onChange={(e) => editActivity(r.id, { title: e.target.value })}
+                      />
+                    </div>
+                    <div className="field" style={{ marginBottom: 12 }}>
+                      <label>Subheading (optional)</label>
+                      <input
+                        value={r.subtitle}
+                        placeholder="—"
+                        onChange={(e) => editActivity(r.id, { subtitle: e.target.value })}
+                      />
+                    </div>
+                    <div className="sacts">
+                      <button
+                        className="delbtn"
+                        style={{ marginLeft: "auto" }}
+                        title="Remove activity"
+                        onClick={() => deleteActivity(r.id)}
+                      >
+                        {Icons.trash}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {!routine.length && (
+                  <div className="empty" style={{ gridColumn: "1/-1" }}>
+                    <div className="ei">🕘</div>
+                    <b>No activities</b>
+                    The daily routine section is hidden on the About page until you add one.
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* ---------------- FAQS ---------------- */}
+          {view === "faqs" && (
+            <section>
+              <div className="sect-head">
+                <div>
+                  <span className="hand" style={{ color: "var(--coral)", fontSize: 15 }}>
+                    parents ask
+                  </span>
+                  <h2>FAQs</h2>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                  {dirtyFaqs.count > 0 && (
+                    <button className="btn-s bs-ink savebtn" onClick={saveFaqItems}>
+                      {Icons.check}Save {dirtyFaqs.count} change{dirtyFaqs.count === 1 ? "" : "s"}
+                    </button>
+                  )}
+                  <button className="btn-s bs-sun" onClick={addFaqItem}>
+                    {Icons.plus}Add question
+                  </button>
+                </div>
+              </div>
+              <div className="filterbar">
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button className={`chip${faqGroup === "about" ? " on" : ""}`} onClick={() => setFaqGroup("about")}>
+                    About page <b style={{ opacity: 0.6 }}>{faqs.filter((f) => f.group === "about").length}</b>
+                  </button>
+                  <button className={`chip${faqGroup === "packages" ? " on" : ""}`} onClick={() => setFaqGroup("packages")}>
+                    Packages page <b style={{ opacity: 0.6 }}>{faqs.filter((f) => f.group === "packages").length}</b>
+                  </button>
+                </div>
+              </div>
+              <p className="d" style={{ color: "var(--ink-500)", fontSize: 13, margin: "14px 0 18px" }}>
+                {faqGroup === "about"
+                  ? "The accordion on the About page. Drag to reorder — the first one opens by default."
+                  : "The “Quick package questions” grid on the Packages page. Drag to reorder."}
+              </p>
+              <div className="faqgrid">
+                {visibleFaqs.map((f, i) => (
+                  <div
+                    key={f.id}
+                    className={`scard${faqDragging === f.id ? " dragging" : ""}${faqOverId === f.id ? " over" : ""}${dirtyFaqs.ids.has(f.id) ? " unsaved" : ""}`}
+                    draggable
+                    onDragStart={() => {
+                      faqDragId.current = f.id;
+                      setFaqDragging(f.id);
+                    }}
+                    onDragEnd={() => {
+                      setFaqDragging(null);
+                      setFaqOverId(null);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (f.id !== faqDragId.current) setFaqOverId(f.id);
+                    }}
+                    onDragLeave={() => setFaqOverId((o) => (o === f.id ? null : o))}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      onFaqDrop(f.id);
+                    }}
+                  >
+                    <div className="stop" style={{ marginBottom: 8 }}>
+                      <span className="rnum">{i + 1}</span>
+                      <div className="grip" title="Drag to reorder">
+                        {Icons.grip}
+                      </div>
+                    </div>
+                    <div className="field" style={{ marginBottom: 10 }}>
+                      <label>Question</label>
+                      <input
+                        value={f.q}
+                        placeholder="What ages do you accept?"
+                        onChange={(e) => editFaq(f.id, { q: e.target.value })}
+                      />
+                    </div>
+                    <div className="field" style={{ marginBottom: 12 }}>
+                      <label>Answer</label>
+                      <textarea
+                        rows={4}
+                        value={f.a}
+                        placeholder="Write the answer parents will see…"
+                        onChange={(e) => editFaq(f.id, { a: e.target.value })}
+                      />
+                    </div>
+                    <div className="sacts">
+                      <button
+                        className="delbtn"
+                        style={{ marginLeft: "auto" }}
+                        title="Remove question"
+                        onClick={() => deleteFaqItem(f.id)}
+                      >
+                        {Icons.trash}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {!visibleFaqs.length && (
+                  <div className="empty" style={{ gridColumn: "1/-1" }}>
+                    <div className="ei">❓</div>
+                    <b>No questions here</b>
+                    This FAQ section is hidden on the site until you add one.
                   </div>
                 )}
               </div>
@@ -1020,6 +1706,112 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                     Add one above to fill the pricing page.
                   </div>
                 )}
+
+                <div className="card set-card" style={{ gridColumn: "1 / -1" }}>
+                  <div className="pkg-head">
+                    <h3 style={{ margin: 0 }}>Comparison table</h3>
+                    <div className="pkg-actions">
+                      <button className="btn-s bs-ghost" onClick={addCmpCol}>
+                        {Icons.plus}Column
+                      </button>
+                      <button className="btn-s bs-ghost" onClick={addCmpRow}>
+                        {Icons.plus}Row
+                      </button>
+                      <button className="btn-s bs-ink" onClick={saveComparisonTable}>
+                        Save comparison table
+                      </button>
+                    </div>
+                  </div>
+                  <p className="d">
+                    Shown on the Packages page under the pricing cards. Edit each column heading, mark
+                    one “most popular”, and fill in every row — type ✓, —, or any text.
+                  </p>
+
+                  <div style={{ overflowX: "auto" }}>
+                    <div style={{ minWidth: 220 + cmpCols.length * 150 }}>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: `180px repeat(${cmpCols.length}, minmax(130px,1fr)) 40px`,
+                          gap: 8,
+                          marginBottom: 12,
+                        }}
+                      >
+                        <div />
+                        {cmpCols.map((c, ci) => (
+                          <div key={ci} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            <div className="field" style={{ margin: 0 }}>
+                              <input
+                                value={c.label}
+                                placeholder="Column name"
+                                onChange={(e) => updateCmpCol(ci, { label: e.target.value })}
+                              />
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                              <label className="pkg-check" style={{ margin: 0 }}>
+                                <input
+                                  type="checkbox"
+                                  checked={c.highlight}
+                                  onChange={(e) => updateCmpCol(ci, { highlight: e.target.checked })}
+                                />
+                                highlight
+                              </label>
+                              <button
+                                className="delbtn"
+                                title="Remove column"
+                                onClick={() => removeCmpCol(ci)}
+                                disabled={cmpCols.length <= 1}
+                                style={{ width: 28, height: 28, flex: "none" }}
+                              >
+                                {Icons.trash}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        <div />
+                      </div>
+
+                      {cmpRows.map((r, ri) => (
+                        <div
+                          key={ri}
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: `180px repeat(${cmpCols.length}, minmax(130px,1fr)) 40px`,
+                            gap: 8,
+                            marginBottom: 8,
+                            alignItems: "center",
+                          }}
+                        >
+                          <div className="field" style={{ margin: 0 }}>
+                            <input
+                              value={r.label}
+                              placeholder="Row label"
+                              onChange={(e) => updateCmpRow(ri, { label: e.target.value })}
+                            />
+                          </div>
+                          {cmpCols.map((_, ci) => (
+                            <div className="field" style={{ margin: 0 }} key={ci}>
+                              <input
+                                value={r.values[ci] ?? ""}
+                                placeholder="✓ / — / text"
+                                onChange={(e) => updateCmpCell(ri, ci, e.target.value)}
+                              />
+                            </div>
+                          ))}
+                          <button className="delbtn" title="Remove row" onClick={() => removeCmpRow(ri)}>
+                            {Icons.trash}
+                          </button>
+                        </div>
+                      ))}
+
+                      {!cmpRows.length && (
+                        <p className="d" style={{ margin: 0 }}>
+                          No rows yet — add one above.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </section>
           )}
@@ -1172,7 +1964,7 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
             showToast("Saved");
           } else {
             const newId = await actions.createTestimonial(data);
-            setTestis((arr) => [{ id: newId, ts: Date.now(), ...data }, ...arr]);
+            setTestis((arr) => [{ id: newId, ts: Date.now(), home: false, ...data }, ...arr]);
             showToast("Testimonial added");
           }
           setDrawer(null);

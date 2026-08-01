@@ -1,18 +1,15 @@
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
+import { getRoutine } from "@/lib/site-settings";
 
-const slots = [
-  { t: "7:00 — 9:00", l: "Drop-off & free play", c: "#FFE27A" },
-  { t: "9:00 — 9:30", l: "Breakfast (supervised)", c: "#FFC9B6" },
-  { t: "9:30 — 11:00", l: "Montessori circle", c: "#C9E7FF" },
-  { t: "11:00 — 12:00", l: "Outdoor / sensory", c: "#C8EBD7" },
-  { t: "12:00 — 1:00", l: "Hot lunch", c: "#FFE27A" },
-  { t: "1:00 — 3:00", l: "Nap time", c: "#C9E7FF" },
-  { t: "3:00 — 4:30", l: "Art & sensory", c: "#FFC9B6" },
-  { t: "4:30 — 6:00", l: "Outdoor & pickup", c: "#C8EBD7" },
-];
+// Card colours cycle by position, so the palette stays balanced whatever the
+// admin adds or removes.
+const CARD_COLORS = ["#FFE27A", "#FFC9B6", "#C9E7FF", "#C8EBD7"];
 
-export function DailyRoutine() {
+export async function DailyRoutine() {
+  const cards = await getRoutine();
+  if (!cards.length) return null;
+
   return (
     <section className="py-14">
       <Container>
@@ -26,14 +23,14 @@ export function DailyRoutine() {
             <h2 className="text-3xl md:text-[44px] mt-2">Predictable rhythm. Joyful moments.</h2>
           </div>
           <div className="relative grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {slots.map((s, i) => (
+            {cards.map((c, i) => (
               <div
                 key={i}
                 className="rounded-[18px] p-4 text-ink-900"
-                style={{ background: s.c }}
+                style={{ background: CARD_COLORS[i % CARD_COLORS.length] }}
               >
-                <div className="font-display font-extrabold text-[15px]">{s.t}</div>
-                <div className="text-sm mt-1.5 font-semibold">{s.l}</div>
+                <div className="font-display font-extrabold text-[15px]">{c.title}</div>
+                {c.subtitle && <div className="text-sm mt-1.5 font-semibold">{c.subtitle}</div>}
               </div>
             ))}
           </div>

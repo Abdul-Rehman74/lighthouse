@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Play } from "lucide-react";
+import { Button } from "@/components/atoms/Button";
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import type { VideoRef } from "@/lib/video";
@@ -33,7 +35,7 @@ function Card({ t, i }: { t: TestimonialItem; i: number }) {
       <div className="h-[220px] relative flex items-center justify-center" style={{ background: bgs[i % bgs.length] }}>
         {hasVideo && playing && t.video!.type === "cloudinary" && (
           // eslint-disable-next-line jsx-a11y/media-has-caption
-          <video src={t.video!.url} poster={t.video!.posterUrl} controls autoPlay className="absolute inset-0 w-full h-full object-cover bg-black" />
+          <video src={t.video!.url} poster={t.video!.posterUrl} controls autoPlay className="absolute inset-0 w-full h-full object-contain" />
         )}
         {hasVideo && playing && t.video!.type !== "cloudinary" && (
           <iframe
@@ -49,7 +51,7 @@ function Card({ t, i }: { t: TestimonialItem; i: number }) {
           <>
             {t.video!.posterUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={t.video!.posterUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+              <img src={t.video!.posterUrl} alt="" className="absolute inset-0 w-full h-full object-contain" />
             )}
             <button
               type="button"
@@ -75,15 +77,35 @@ function Card({ t, i }: { t: TestimonialItem; i: number }) {
   );
 }
 
-export function VideoTestimonials({ items }: { items?: TestimonialItem[] }) {
+export function VideoTestimonials({
+  items,
+  eyebrow = "parents say",
+  heading = "Video testimonials.",
+  viewAllHref,
+  viewAllLabel = "Visit the gallery",
+}: {
+  items?: TestimonialItem[];
+  eyebrow?: string;
+  heading?: string;
+  /** When set, shows a link/button to the full gallery testimonials (e.g. from the home page teaser). */
+  viewAllHref?: string;
+  viewAllLabel?: string;
+}) {
   const list = items && items.length ? items : fallback;
 
   return (
-    <section className="bg-cream-100 py-14 md:py-20">
+    <section id="video-testimonials" className="bg-cream-100 py-14 md:py-20 scroll-mt-24">
       <Container>
-        <div className="text-center mb-12">
-          <Eyebrow color="text-mint-400">parents say</Eyebrow>
-          <h2 className="text-3xl md:text-[44px] mt-1.5">Video testimonials.</h2>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-12 text-center sm:text-left">
+          <div className="mx-auto sm:mx-0">
+            <Eyebrow color="text-mint-400">{eyebrow}</Eyebrow>
+            <h2 className="text-3xl md:text-[44px] mt-1.5">{heading}</h2>
+          </div>
+          {viewAllHref && (
+            <Button asChild variant="ghost" size="sm" className="self-center sm:self-start">
+              <Link href={viewAllHref}>{viewAllLabel}</Link>
+            </Button>
+          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {list.map((t, i) => (

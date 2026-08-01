@@ -4,23 +4,25 @@ import { TiltCard } from "@/components/molecules/TiltCard";
 
 const pillars = [
   {
-    icon: "👩‍🏫",
-    title: "Always staffed",
-    text: "22 teachers and 5 professional nannies, every single day. Real eyes on every little one.",
+    icon: "🤝",
+    title: "Growing Together",
+    text: "Partnering with families to support each child's success.",
     bg: "#FFE27A",
     rotate: -1.5,
   },
   {
-    icon: "🧼",
-    title: "Spotlessly clean",
-    text: "Sanitization isn't a chore — it's the foundation. Linen, toys, surfaces, bottles, daily.",
+    icon: "🧩",
+    title: "Every Child Belongs",
+    text: "Creating an inclusive environment where every child feels valued.",
     bg: "#C9E7FF",
     rotate: 1,
   },
   {
+    // A sprout reads as nurtured growth, matching "personalized care and learning
+    // support" — and stays visually distinct from the handshake in pillar one.
     icon: "🌱",
-    title: "Joyful Montessori",
-    text: "Self-directed play and hands-on materials, calibrated to your child's stage.",
+    title: "Supporting Every Journey",
+    text: "Providing personalized care and learning support based on each child's needs.",
     bg: "#C8EBD7",
     rotate: -1,
   },

@@ -4,10 +4,22 @@ import {
   getPublicSettings,
   listPhotos,
   listTestimonials,
+  listStaff,
+  listRoutine,
+  listFaqs,
   DEFAULT_PACKAGES,
   DEFAULT_PACKAGES_NOTE,
+  DEFAULT_COMPARISON_COLUMNS,
+  DEFAULT_COMPARISON_ROWS,
+  DEFAULT_STAFF_HEADING,
+  DEFAULT_STAFF_NOTE,
+  DEFAULT_STAFF_FOOTNOTE,
   type PhotoCategory,
   type Package,
+  type ComparisonColumn,
+  type ComparisonRow,
+  type Staff,
+  type FaqGroup,
 } from "@/lib/admin-data";
 import type { VideoRef } from "@/lib/video";
 import { siteConfig } from "@/lib/site-config";
@@ -39,6 +51,16 @@ function handleFromUrl(url: string, fallback: string): string {
 }
 
 /**
+ * One shared, request-deduped read of the `settings` document.
+ *
+ * The name/phone, packages, and comparison table all live in that single doc,
+ * so without this every consumer (layout, footer, CTA, packages cards,
+ * comparison table) would issue its own `findOne` for the same data — three or
+ * more round trips per page render. `cache()` collapses them into one.
+ */
+const settingsDoc = cache(getPublicSettings);
+
+/**
  * Public-facing daycare details, sourced from the admin `settings` collection
  * with a static fallback so pages still render if the DB is unreachable.
  * `cache()` dedupes the DB hit across all server components in one request.
@@ -49,7 +71,7 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
     facebook: { href: siteConfig.social.facebook.href, handle: siteConfig.social.facebook.handle },
   };
   try {
-    const s = await getPublicSettings();
+    const s = await settingsDoc();
     const digits = (s.phone || "").replace(/[^0-9]/g, "");
     const ig = s.social.instagram || siteConfig.social.instagram.href;
     const fb = s.social.facebook || siteConfig.social.facebook.href;
@@ -99,8 +121,10 @@ export const getGalleryPhotos = cache(async (): Promise<GalleryItem[]> => {
  */
 export const getHomePhotos = cache(async (): Promise<GalleryItem[]> => {
   try {
-    const photos = await listPhotos();
-    return photos.filter((p) => p.home).map((p) => ({ src: p.src, cat: p.cat, cap: p.cap }));
+    // Filtered in the database — this used to fetch the entire library and then
+    // discard most of it in JS, which meant the home page paid for every photo.
+    const photos = await listPhotos({ homeOnly: true });
+    return photos.map((p) => ({ src: p.src, cat: p.cat, cap: p.cap }));
   } catch {
     return [];
   }
@@ -109,7 +133,7 @@ export const getHomePhotos = cache(async (): Promise<GalleryItem[]> => {
 /** Pricing tiers + note for the Packages page (and home peek). Falls back to defaults. */
 export const getPackages = cache(async (): Promise<{ packages: Package[]; note: string }> => {
   try {
-    const s = await getPublicSettings();
+    const s = await settingsDoc();
     return {
       packages: s.packages?.length ? s.packages : DEFAULT_PACKAGES,
       note: s.packagesNote || DEFAULT_PACKAGES_NOTE,
@@ -140,5 +164,115 @@ export const getPublicTestimonials = cache(async (): Promise<PublicTestimonial[]
     }));
   } catch {
     return [];
+  }
+});
+
+/**
+ * Testimonials the admin selected for the home page video teaser (in saved order).
+ * Empty if none are selected or the DB is down — the home teaser then renders nothing.
+ */
+export const getHomeTestimonials = cache(async (): Promise<PublicTestimonial[]> => {
+  try {
+    const items = await listTestimonials();
+    return items
+      .filter((t) => t.home)
+      .map((t) => ({ name: t.name, child: t.child, quote: t.quote, duration: t.duration, video: t.video ?? null }));
+  } catch {
+    return [];
+  }
+});
+
+export type StaffMember = Pick<Staff, "name" | "role" | "photo">;
+
+/**
+ * Team members for the About page, in saved order.
+ *
+ * `listStaff()` seeds the default team into the DB on first read, so these are
+ * always real admin-editable rows — never hard-coded markup. An empty result
+ * therefore means the admin deliberately removed everyone, and the section
+ * hides itself rather than resurrecting the defaults.
+ */
+export const getStaff = cache(async (): Promise<StaffMember[]> => {
+  try {
+    const people = await listStaff();
+    return people.map((s) => ({ name: s.name, role: s.role, photo: s.photo }));
+  } catch {
+    return [];
+  }
+});
+
+export interface FaqEntry {
+  q: string;
+  a: string;
+}
+
+/**
+ * FAQs for one page, in saved order. Seeded into the DB on first read, so these
+ * are always admin-editable rows. Empty means the admin removed them all and the
+ * section hides itself.
+ */
+export const getFaqs = cache(async (group: FaqGroup): Promise<FaqEntry[]> => {
+  try {
+    const all = await listFaqs();
+    return all.filter((f) => f.group === group).map((f) => ({ q: f.q, a: f.a }));
+  } catch {
+    return [];
+  }
+});
+
+export interface RoutineCard {
+  title: string;
+  subtitle: string;
+}
+
+/**
+ * "A typical day" activity cards, in saved order. Seeded into the DB on first
+ * read (see `ensureSeeded`), so these are always admin-editable rows. An empty
+ * result means the admin removed them all, and the section hides itself.
+ */
+export const getRoutine = cache(async (): Promise<RoutineCard[]> => {
+  try {
+    const items = await listRoutine();
+    return items.map((r) => ({ title: r.title, subtitle: r.subtitle }));
+  } catch {
+    return [];
+  }
+});
+
+export interface StaffCopy {
+  heading: string;
+  note: string;
+  footnote: string;
+}
+
+/** Admin-editable headline, side note and footnote around the team grid. */
+export const getStaffCopy = cache(async (): Promise<StaffCopy> => {
+  try {
+    const s = await settingsDoc();
+    return {
+      heading: s.staffHeading ?? DEFAULT_STAFF_HEADING,
+      note: s.staffNote ?? DEFAULT_STAFF_NOTE,
+      footnote: s.staffFootnote ?? DEFAULT_STAFF_FOOTNOTE,
+    };
+  } catch {
+    return { heading: DEFAULT_STAFF_HEADING, note: DEFAULT_STAFF_NOTE, footnote: DEFAULT_STAFF_FOOTNOTE };
+  }
+});
+
+export interface ComparisonTableData {
+  columns: ComparisonColumn[];
+  rows: ComparisonRow[];
+}
+
+/** The "Compare what's included" table shown on the Packages page. Falls back to defaults. */
+export const getComparisonTable = cache(async (): Promise<ComparisonTableData> => {
+  try {
+    const s = await settingsDoc();
+    return {
+      columns: s.comparisonColumns?.length ? s.comparisonColumns : DEFAULT_COMPARISON_COLUMNS,
+      rows: s.comparisonRows?.length ? s.comparisonRows : DEFAULT_COMPARISON_ROWS,
+    };
+  } catch {
+    return { columns: DEFAULT_COMPARISON_COLUMNS, rows: DEFAULT_COMPARISON_ROWS };
   }
 });
