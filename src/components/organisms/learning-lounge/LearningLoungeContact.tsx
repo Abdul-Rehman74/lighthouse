@@ -1,7 +1,9 @@
 import { Container } from "@/components/atoms/Container";
 import { WhatsAppLink } from "@/components/atoms/WhatsAppLink";
+import { getHours } from "@/lib/site-settings";
 
-export function LearningLoungeContact() {
+export async function LearningLoungeContact() {
+  const hours = await getHours();
   return (
     <section id="contact" className="py-20">
       <Container>
@@ -51,7 +53,7 @@ export function LearningLoungeContact() {
               </div>
               <div>
                 <div className="font-display font-bold text-lg leading-tight">0333-5566862</div>
-                <div className="text-[13px] text-ink-500 mt-1">Mon–Sat · 7am–6pm</div>
+                <div className="text-[13px] text-ink-500 mt-1">{hours.short}</div>
               </div>
             </div>
             <div className="flex items-start gap-4">
@@ -64,9 +66,9 @@ export function LearningLoungeContact() {
               <div>
                 <div className="font-display font-bold text-lg leading-tight">Lighthouse Daycare</div>
                 <div className="text-[13px] text-ink-700 mt-1 leading-relaxed">
-                  House No. 164, Street 8, Main Double Road,
+                  House 164, Street 8, Chaklala Scheme 3,
                   <br />
-                  Chaklala Scheme III, Rawalpindi
+                  Rawalpindi, Punjab 46000
                 </div>
               </div>
             </div>

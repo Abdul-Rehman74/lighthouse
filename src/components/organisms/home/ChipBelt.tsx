@@ -1,16 +1,18 @@
 import { Clock, Sun, Baby, Users, SprayCan, Sparkles } from "lucide-react";
 import { Container } from "@/components/atoms/Container";
+import { getHours } from "@/lib/site-settings";
 
-const chips = [
-  { t: "Open Mon–Sat", Icon: Clock },
-  { t: "7am – 6pm", Icon: Sun },
-  { t: "From 2 months", Icon: Baby },
-  { t: "22 teachers + 5 nannies", Icon: Users },
-  { t: "Strict sanitization", Icon: SprayCan },
-  { t: "7 years of trust", Icon: Sparkles },
-];
-
-export function ChipBelt() {
+export async function ChipBelt() {
+  const hours = await getHours();
+  // First two chips come from the admin-editable opening hours; the rest are fixed.
+  const chips = [
+    { t: hours.rows[0]?.label ? `Open ${hours.rows[0].label}` : "Open Mon–Sat", Icon: Clock },
+    { t: hours.rows[0]?.time ?? hours.short, Icon: Sun },
+    { t: "From 2 months", Icon: Baby },
+    { t: "22 teachers + 5 nannies", Icon: Users },
+    { t: "Strict sanitization", Icon: SprayCan },
+    { t: "7 years of trust", Icon: Sparkles },
+  ];
   return (
     <section className="bg-ink-900 text-cream-50 py-6 overflow-hidden">
       <Container>

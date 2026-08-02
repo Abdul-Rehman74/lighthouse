@@ -4,7 +4,7 @@ import { SocialPill } from "@/components/atoms/SocialPill";
 import { WhatsAppLink } from "@/components/atoms/WhatsAppLink";
 import { Container } from "@/components/atoms/Container";
 import { siteConfig } from "@/lib/site-config";
-import { getSiteSettings } from "@/lib/site-settings";
+import { getSiteSettings, getHours } from "@/lib/site-settings";
 import { Clock, Instagram, Facebook, MessageCircle, MapPin } from "lucide-react";
 
 function FooterTitle({ children }: { children: React.ReactNode }) {
@@ -16,7 +16,7 @@ function FooterTitle({ children }: { children: React.ReactNode }) {
 }
 
 export async function SiteFooter() {
-  const settings = await getSiteSettings();
+  const [settings, hours] = await Promise.all([getSiteSettings(), getHours()]);
   return (
     <footer className="relative overflow-hidden bg-ink-900 text-cream-100 mt-14 md:mt-20">
       <div
@@ -61,12 +61,16 @@ export async function SiteFooter() {
           <div>
             <FooterTitle>Hours</FooterTitle>
             <div className="flex flex-col gap-2 text-sm text-cream-50/70">
-              <div className="flex items-center gap-1.5">
-                <Clock size={14} />
-                {siteConfig.hours.weekday}
-              </div>
-              <div className="text-cream-50 font-bold">{siteConfig.hours.time}</div>
-              <div className="text-xs text-cream-50/50 mt-2">{siteConfig.hours.note}</div>
+              {hours.rows.map((h, i) => (
+                <div key={i}>
+                  <div className="flex items-center gap-1.5">
+                    {i === 0 && <Clock size={14} />}
+                    <span className={i === 0 ? "" : "pl-[22px]"}>{h.label}</span>
+                  </div>
+                  <div className="text-cream-50 font-bold pl-[22px]">{h.time}</div>
+                </div>
+              ))}
+              {hours.note && <div className="text-xs text-cream-50/50 mt-2">{hours.note}</div>}
             </div>
           </div>
 

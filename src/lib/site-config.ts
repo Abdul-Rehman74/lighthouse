@@ -24,19 +24,18 @@ export const siteConfig = {
   },
   branches: [
     {
-      name: "Main Branch",
-      address: "Chaklala Scheme III, Rawalpindi",
+      name: "Branch 1",
+      address: "House 164, Street 8, Chaklala Scheme 3, Rawalpindi, Punjab 46000",
       phone: "+92 300 0000001",
-      hours: "Mon–Sat · 7am–6pm",
       lat: 33.5869924,
       lng: 73.0879666,
       mapsHref: "https://maps.app.goo.gl/DBxV2xXUCUoQuvHD8",
     },
     {
-      name: "Second Branch",
-      address: "Chaklala Scheme III, Rawalpindi",
+      name: "Branch 2",
+      address:
+        "House 628, Street 8 (opposite Tehzeeb Bakers), Chaklala Scheme 3, Rawalpindi, Punjab 46000",
       phone: "+92 300 0000002",
-      hours: "Mon–Sat · 7am–6pm",
       lat: 33.58638,
       lng: 73.087296,
       mapsHref: "https://maps.app.goo.gl/2awL9TLt2gVeewhs5",

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import * as Accordion from "@radix-ui/react-accordion";
 import { Plus, Minus } from "lucide-react";
 import { Container } from "@/components/atoms/Container";
@@ -23,7 +24,14 @@ export function FAQSection({ faqs }: { faqs: FaqEntry[] }) {
               Anything on<br />your mind?
             </h2>
             <p className="text-base text-ink-700 mt-4 max-w-[320px]">
-              If your question isn&apos;t here, WhatsApp us — we usually reply within an hour.
+              Have more questions? Our admin team is here to guide you — visit our{" "}
+              <Link
+                href="/contact"
+                className="font-bold underline underline-offset-4 decoration-2 text-ink-900 hover:text-coral-400 transition-colors"
+              >
+                Contact page
+              </Link>
+              , we&apos;d love to hear from you.
             </p>
           </div>
           <Accordion.Root type="single" collapsible defaultValue="item-0" className="flex flex-col gap-3.5">

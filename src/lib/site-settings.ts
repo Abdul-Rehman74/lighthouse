@@ -11,6 +11,9 @@ import {
   DEFAULT_PACKAGES_NOTE,
   DEFAULT_COMPARISON_COLUMNS,
   DEFAULT_COMPARISON_ROWS,
+  DEFAULT_HOURS,
+  DEFAULT_HOURS_NOTE,
+  DEFAULT_HOURS_SHORT,
   DEFAULT_STAFF_HEADING,
   DEFAULT_STAFF_NOTE,
   DEFAULT_STAFF_FOOTNOTE,
@@ -236,6 +239,43 @@ export const getRoutine = cache(async (): Promise<RoutineCard[]> => {
     return items.map((r) => ({ title: r.title, subtitle: r.subtitle }));
   } catch {
     return [];
+  }
+});
+
+export interface GroupPhoto {
+  /** Cacheable URL, or "" when no photo has been uploaded. */
+  src: string;
+  caption: string;
+}
+
+/** Team group photo for the About hero. `src` is "" when the admin hasn't set one. */
+export const getGroupPhotoInfo = cache(async (): Promise<GroupPhoto> => {
+  try {
+    const s = await settingsDoc();
+    return { src: s.groupPhoto || "", caption: s.groupPhotoCaption || "" };
+  } catch {
+    return { src: "", caption: "" };
+  }
+});
+
+export interface OpeningHours {
+  rows: { label: string; time: string }[];
+  note: string;
+  /** Compact one-liner for chips and branch cards. */
+  short: string;
+}
+
+/** Admin-editable opening hours, used everywhere times are shown. */
+export const getHours = cache(async (): Promise<OpeningHours> => {
+  try {
+    const s = await settingsDoc();
+    return {
+      rows: s.hours?.length ? s.hours : DEFAULT_HOURS,
+      note: s.hoursNote ?? DEFAULT_HOURS_NOTE,
+      short: s.hoursShort ?? DEFAULT_HOURS_SHORT,
+    };
+  } catch {
+    return { rows: DEFAULT_HOURS, note: DEFAULT_HOURS_NOTE, short: DEFAULT_HOURS_SHORT };
   }
 });
 

@@ -119,7 +119,7 @@ export interface Faq {
 /** Seed FAQs for the About page accordion. */
 export const DEFAULT_FAQS_ABOUT: { q: string; a: string }[] = [
   { q: "What ages do you accept?", a: "We welcome children from 2 months onwards. Our rooms are organized by age — infants, toddlers, and pre-K — so each child gets care tuned to their stage." },
-  { q: "What are your timings?", a: "We are open Monday to Saturday, 7:00 AM to 6:00 PM. We are closed on Sundays and gazetted holidays." },
+  { q: "What are your timings?", a: "We are open Monday to Friday, 8:00 AM to 7:00 PM, and Saturdays 8:00 AM to 2:00 PM. We are closed on Sundays and gazetted holidays." },
   { q: "How do you handle hygiene and sanitization?", a: "Sanitization is on a strict daily checklist — linen, toys, surfaces, bottles, and meal areas. Our health & hygiene lead supervises all protocols, and meals are prepared and served under supervision." },
   { q: "How many teachers and nannies are on staff?", a: "We have 22 trained teachers and 5 professional nannies — a teacher-to-child ratio that means real eyes on every little one, all day." },
   { q: "Do you offer a free trial?", a: "Yes — bring your child in for a half-day visit, free of charge. Walk through, meet the teachers, see the rooms. WhatsApp us or fill the form on the Contact page." },
@@ -135,6 +135,26 @@ export const DEFAULT_FAQS_PACKAGES: { q: string; a: string }[] = [
   { q: "Can I switch packages later?", a: "Yes — switch anytime with one month's notice. Many parents start with Half day and move to School day." },
   { q: "Do you offer sibling discount?", a: "Yes — 10% off the monthly fee for the second child." },
 ];
+
+/**
+ * URL the About hero uses for the team group photo. Static (there's only ever
+ * one), with a cache-buster appended at read time so a re-upload shows through.
+ */
+export const GROUP_PHOTO_URL = "/api/group-photo";
+
+/** One line of the opening-hours table, e.g. { label: "Mon – Fri", time: "8:00am – 7:00pm" }. */
+export interface HoursRow {
+  label: string;
+  time: string;
+}
+
+export const DEFAULT_HOURS: HoursRow[] = [
+  { label: "Mon – Fri", time: "8:00am – 7:00pm" },
+  { label: "Saturday", time: "8:00am – 2:00pm" },
+];
+export const DEFAULT_HOURS_NOTE = "Closed Sundays & gazetted holidays";
+/** Compact one-liner for tight spots (nav chips, branch cards) where the table won't fit. */
+export const DEFAULT_HOURS_SHORT = "Mon–Sat · 8am–7pm";
 
 export const DEFAULT_STAFF_HEADING = "Meet our Team";
 export const DEFAULT_STAFF_NOTE =
@@ -245,6 +265,20 @@ export interface AdminSettings {
   comparisonColumns: ComparisonColumn[];
   /** Rows for the "Compare what's included" table. */
   comparisonRows: ComparisonRow[];
+  /**
+   * Team group photo shown in the About page hero, as a base64 data URL.
+   * Empty means fall back to the illustrated polaroid collage.
+   * Served via `/api/group-photo` so the blob never enters page HTML.
+   */
+  groupPhoto: string;
+  /** Caption/alt text for the group photo. */
+  groupPhotoCaption: string;
+  /** Opening-hours rows shown in the footer, contact page and FAQ. */
+  hours: HoursRow[];
+  /** Small print under the hours, e.g. closures. */
+  hoursNote: string;
+  /** Compact one-liner for chips and branch cards. */
+  hoursShort: string;
   /** Headline above the About page team grid, e.g. "Meet our Team". */
   staffHeading: string;
   /** Small print beside that headline. */
@@ -276,6 +310,11 @@ interface SettingsDoc {
   packagesNote?: string;
   comparisonColumns?: ComparisonColumn[];
   comparisonRows?: ComparisonRow[];
+  groupPhoto?: string;
+  groupPhotoCaption?: string;
+  hours?: HoursRow[];
+  hoursNote?: string;
+  hoursShort?: string;
   staffHeading?: string;
   staffNote?: string;
   staffFootnote?: string;
@@ -315,6 +354,9 @@ async function ensureSettings(): Promise<SettingsDoc> {
     packagesNote: DEFAULT_PACKAGES_NOTE,
     comparisonColumns: DEFAULT_COMPARISON_COLUMNS,
     comparisonRows: DEFAULT_COMPARISON_ROWS,
+    hours: DEFAULT_HOURS,
+    hoursNote: DEFAULT_HOURS_NOTE,
+    hoursShort: DEFAULT_HOURS_SHORT,
     staffHeading: DEFAULT_STAFF_HEADING,
     staffNote: DEFAULT_STAFF_NOTE,
     staffFootnote: DEFAULT_STAFF_FOOTNOTE,
@@ -339,6 +381,12 @@ export async function getPublicSettings(): Promise<AdminSettings> {
     comparisonColumns: s.comparisonColumns?.length ? s.comparisonColumns : DEFAULT_COMPARISON_COLUMNS,
     comparisonRows: s.comparisonRows?.length ? s.comparisonRows : DEFAULT_COMPARISON_ROWS,
     // `??` not `||` — an admin who clears these fields should get a blank line, not the default back.
+    // The blob itself is intentionally NOT returned here — see getGroupPhoto().
+    groupPhoto: s.groupPhoto ? GROUP_PHOTO_URL : "",
+    groupPhotoCaption: s.groupPhotoCaption ?? "",
+    hours: s.hours?.length ? s.hours : DEFAULT_HOURS,
+    hoursNote: s.hoursNote ?? DEFAULT_HOURS_NOTE,
+    hoursShort: s.hoursShort ?? DEFAULT_HOURS_SHORT,
     staffHeading: s.staffHeading ?? DEFAULT_STAFF_HEADING,
     staffNote: s.staffNote ?? DEFAULT_STAFF_NOTE,
     staffFootnote: s.staffFootnote ?? DEFAULT_STAFF_FOOTNOTE,
@@ -420,6 +468,17 @@ export async function updateSettings(patch: Partial<AdminSettings>): Promise<voi
       values: Array.from({ length: cols.length }, (_, i) => String(r.values?.[i] ?? "").trim()),
     }));
   }
+  // "" is meaningful: it clears the photo and restores the illustrated collage.
+  if (typeof patch.groupPhoto === "string") $set.groupPhoto = patch.groupPhoto;
+  if (typeof patch.groupPhotoCaption === "string") $set.groupPhotoCaption = patch.groupPhotoCaption.trim();
+  if (Array.isArray(patch.hours)) {
+    $set.hours = patch.hours
+      .slice(0, 7)
+      .map((h) => ({ label: String(h.label ?? "").trim(), time: String(h.time ?? "").trim() }))
+      .filter((h) => h.label || h.time);
+  }
+  if (typeof patch.hoursNote === "string") $set.hoursNote = patch.hoursNote.trim();
+  if (typeof patch.hoursShort === "string") $set.hoursShort = patch.hoursShort.trim();
   if (typeof patch.staffHeading === "string") $set.staffHeading = patch.staffHeading.trim();
   if (typeof patch.staffNote === "string") $set.staffNote = patch.staffNote.trim();
   if (typeof patch.staffFootnote === "string") $set.staffFootnote = patch.staffFootnote.trim();
@@ -699,6 +758,12 @@ export async function listStaff(): Promise<Staff[]> {
     order: d.order ?? 0,
     ts: d.ts ?? Date.now(),
   }));
+}
+
+/** Raw base64 team group photo. Only `/api/group-photo` needs this. */
+export async function getGroupPhoto(): Promise<string | null> {
+  const s = await ensureSettings();
+  return typeof s.groupPhoto === "string" && s.groupPhoto ? s.groupPhoto : null;
 }
 
 /** Raw base64 photo for one team member. Only `/api/staff-photo/[id]` needs this. */

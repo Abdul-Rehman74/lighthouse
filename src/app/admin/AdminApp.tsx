@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
   Submission,
@@ -12,6 +12,7 @@ import type {
   RoutineItem,
   Faq,
   FaqGroup,
+  HoursRow,
   AdminSettings,
   Package,
   ComparisonColumn,
@@ -174,6 +175,23 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2200);
   };
+
+  /**
+   * True only after hydration.
+   *
+   * This component is `"use client"`, but Next still server-renders it first —
+   * and the server runs in UTC on Vercel while the visitor's browser runs in
+   * their own timezone. Anything derived from `Date.now()`, `getDay()` or
+   * `toDateString()` can therefore differ between the two renders, which React
+   * treats as a hydration mismatch and surfaces in production as
+   * "Application error: a client-side exception has occurred".
+   *
+   * It never reproduced locally because there the dev server and the browser
+   * share one timezone. Time-dependent values below are gated on this flag so
+   * the server emits something stable and the real values fill in on the client.
+   */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // grow-in animation for charts
   const [animate, setAnimate] = useState(false);
@@ -424,6 +442,49 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
     showToast("Order updated");
   };
 
+  /* ---- team group photo (About hero) ---- */
+  // Starts as a URL from the server; after an upload it holds a base64 preview.
+  const [groupPhoto, setGroupPhoto] = useState(initialSettings.groupPhoto ?? "");
+  const [groupCaption, setGroupCaption] = useState(initialSettings.groupPhotoCaption ?? "");
+  const [savingGroup, setSavingGroup] = useState(false);
+  const groupFileRef = useRef<HTMLInputElement>(null);
+
+  const onGroupPhoto = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      showToast("Please choose an image");
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      showToast("Image is over 2MB — please resize it first");
+      return;
+    }
+    const r = new FileReader();
+    r.onload = (e) => {
+      const data = String(e.target?.result || "");
+      setGroupPhoto(data);
+      setSavingGroup(true);
+      actions
+        .saveSettings({ groupPhoto: data })
+        .then(() => showToast("Group photo updated"))
+        .catch(() => showToast("Couldn't save photo"))
+        .finally(() => setSavingGroup(false));
+    };
+    r.readAsDataURL(file);
+  };
+  const clearGroupPhoto = () => {
+    setGroupPhoto("");
+    actions
+      .saveSettings({ groupPhoto: "" })
+      .then(() => showToast("Group photo removed"))
+      .catch(() => showToast("Couldn't remove photo"));
+  };
+  const saveGroupCaption = () => {
+    actions
+      .saveSettings({ groupPhotoCaption: groupCaption })
+      .then(() => showToast("Caption saved"))
+      .catch(() => showToast("Couldn't save"));
+  };
+
   const [staffHeading, setStaffHeading] = useState(initialSettings.staffHeading ?? "");
   const [staffNote, setStaffNote] = useState(initialSettings.staffNote ?? "");
   const [staffFootnote, setStaffFootnote] = useState(initialSettings.staffFootnote ?? "");
@@ -638,6 +699,23 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
     actions.saveSettings({ name: setName, phone: setPhone }).then(() => showToast("Details saved")).catch(() => showToast("Couldn't save"));
   };
 
+  /* ---- opening hours ---- */
+
+  const [hoursRows, setHoursRows] = useState<HoursRow[]>(initialSettings.hours ?? []);
+  const [hoursNote, setHoursNote] = useState(initialSettings.hoursNote ?? "");
+  const [hoursShort, setHoursShort] = useState(initialSettings.hoursShort ?? "");
+  const updateHoursRow = (i: number, patch: Partial<HoursRow>) =>
+    setHoursRows((arr) => arr.map((h, j) => (j === i ? { ...h, ...patch } : h)));
+  const addHoursRow = () => setHoursRows((arr) => [...arr, { label: "", time: "" }]);
+  const removeHoursRow = (i: number) => setHoursRows((arr) => arr.filter((_, j) => j !== i));
+  const saveHours = () => {
+    setSettings((s) => ({ ...s, hours: hoursRows, hoursNote, hoursShort }));
+    actions
+      .saveSettings({ hours: hoursRows, hoursNote, hoursShort })
+      .then(() => showToast("Opening hours saved"))
+      .catch(() => showToast("Couldn't save"));
+  };
+
   const saveSocial = () => {
     const social = { instagram: setIg.trim(), facebook: setFb.trim() };
     setSettings((s) => ({ ...s, social }));
@@ -676,7 +754,9 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
   /* ----------------------------- dashboard derived ----------------------------- */
 
   const booked = subs.filter((s) => s.status === "booked").length;
-  const weekCount = subs.filter((s) => s.ts > daysAgo(7)).length;
+  // Also clock-dependent (a row sitting on the 7-day boundary can fall either
+  // side between the server render and hydration), so it waits for mount too.
+  const weekCount = mounted ? subs.filter((s) => s.ts > daysAgo(7)).length : 0;
   const kpis = [
     { v: subs.length, l: "Total requests", tr: "+" + weekCount + " this week", cls: "up", bg: "#FFF3CC", fg: "#a8860f", ic: KPI_ICONS.total },
     { v: newCount, l: "New & unhandled", tr: "needs reply", cls: "flat", bg: "#D3E9FB", fg: "#1769a8", ic: KPI_ICONS.pulse },
@@ -684,13 +764,19 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
     { v: photos.length, l: "Gallery photos", tr: photos.filter((p) => p.featured).length + " featured", cls: "flat", bg: "#FFE0D6", fg: "#c2502f", ic: KPI_ICONS.photos },
   ];
 
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const weekBars: { c: number; lab: string }[] = [];
-  for (let i = 6; i >= 0; i--) {
-    const t = new Date(daysAgo(i)).toDateString();
-    const c = subs.filter((s) => new Date(s.ts).toDateString() === t).length;
-    weekBars.push({ c, lab: dayNames[new Date(daysAgo(i)).getDay()] });
-  }
+  // Day buckets depend on the viewer's timezone, so they're computed only after
+  // mount — see the `mounted` note above. The server renders seven blank bars.
+  const weekBars = useMemo<{ c: number; lab: string }[]>(() => {
+    if (!mounted) return Array.from({ length: 7 }, () => ({ c: 0, lab: "" }));
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const bars: { c: number; lab: string }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const t = new Date(daysAgo(i)).toDateString();
+      const c = subs.filter((s) => new Date(s.ts).toDateString() === t).length;
+      bars.push({ c, lab: dayNames[new Date(daysAgo(i)).getDay()] });
+    }
+    return bars;
+  }, [mounted, subs]);
   const barMax = Math.max(1, ...weekBars.map((b) => b.c));
 
   const donutTotal = subs.length || 1;
@@ -899,7 +985,7 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                           <span className="pd" style={{ background: STATUSES[s.status].dot }} />
                           {STATUSES[s.status].label}
                         </span>
-                        <span className="t">{timeAgo(s.ts)}</span>
+                        <span className="t">{mounted ? timeAgo(s.ts) : ""}</span>
                       </div>
                     ))}
                     {!recent.length && <div className="empty" style={{ padding: "30px 20px" }}>No requests yet.</div>}
@@ -1008,7 +1094,7 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                           </select>
                         </td>
                         <td>
-                          <span style={{ color: "var(--ink-500)", fontSize: 13 }}>{timeAgo(s.ts)}</span>
+                          <span style={{ color: "var(--ink-500)", fontSize: 13 }}>{mounted ? timeAgo(s.ts) : ""}</span>
                         </td>
                         <td>
                           <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
@@ -1300,6 +1386,63 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                 Shown on the About page. Drag a card to reorder. Upload a photo to replace the
                 initials circle — leave it empty and the coloured initials are used instead.
               </p>
+
+              <div className="card set-card" style={{ marginBottom: 18 }}>
+                <div className="pkg-head">
+                  <h3 style={{ margin: 0 }}>Group photo</h3>
+                  <div className="pkg-actions">
+                    <button className="btn-s bs-ghost" disabled={savingGroup} onClick={() => groupFileRef.current?.click()}>
+                      {Icons.upload}
+                      {savingGroup ? "Saving…" : groupPhoto ? "Replace" : "Upload"}
+                    </button>
+                    {groupPhoto && (
+                      <button className="btn-s bs-ghost" style={{ color: "var(--red)", borderColor: "#f3d3d2" }} onClick={clearGroupPhoto}>
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <p className="d">
+                  The team photo at the top of the About page. Update it whenever someone joins or
+                  leaves. JPG/PNG up to 2MB — a wide (landscape) shot works best.
+                </p>
+                <input
+                  ref={groupFileRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) onGroupPhoto(e.target.files[0]);
+                    e.target.value = "";
+                  }}
+                />
+                {groupPhoto ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={groupPhoto}
+                    alt="Team group photo"
+                    style={{ width: "100%", maxHeight: 260, objectFit: "cover", borderRadius: 12, display: "block", marginBottom: 14 }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      border: "1.5px dashed var(--cream-200)", borderRadius: 12, padding: "28px 14px",
+                      textAlign: "center", color: "var(--ink-500)", fontSize: 13, marginBottom: 14,
+                    }}
+                  >
+                    No group photo yet — the About page shows the illustrated collage instead.
+                  </div>
+                )}
+                <div className="field" style={{ marginBottom: 10 }}>
+                  <label>Caption (optional)</label>
+                  <input
+                    value={groupCaption}
+                    placeholder="our team ✿"
+                    onChange={(e) => setGroupCaption(e.target.value)}
+                    onBlur={saveGroupCaption}
+                  />
+                </div>
+              </div>
 
               <div className="card set-card" style={{ marginBottom: 18 }}>
                 <div className="pkg-head">
@@ -1866,6 +2009,51 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                     Save details
                   </button>
                 </div>
+                <div className="card set-card" style={{ gridColumn: "1 / -1" }}>
+                  <div className="pkg-head">
+                    <h3 style={{ margin: 0 }}>Opening hours</h3>
+                    <div className="pkg-actions">
+                      <button className="btn-s bs-ghost" onClick={addHoursRow}>
+                        {Icons.plus}Add row
+                      </button>
+                      <button className="btn-s bs-ink" onClick={saveHours}>
+                        Save hours
+                      </button>
+                    </div>
+                  </div>
+                  <p className="d">
+                    Used everywhere times appear — the home strip, footer, contact page and branch
+                    cards. Add a row per schedule (e.g. weekdays and Saturday).
+                  </p>
+                  {hoursRows.map((h, i) => (
+                    <div
+                      key={i}
+                      style={{ display: "grid", gridTemplateColumns: "1fr 1.3fr 40px", gap: 8, alignItems: "center", marginBottom: 8 }}
+                    >
+                      <div className="field" style={{ margin: 0 }}>
+                        <input value={h.label} placeholder="Mon – Fri" onChange={(e) => updateHoursRow(i, { label: e.target.value })} />
+                      </div>
+                      <div className="field" style={{ margin: 0 }}>
+                        <input value={h.time} placeholder="8:00am – 7:00pm" onChange={(e) => updateHoursRow(i, { time: e.target.value })} />
+                      </div>
+                      <button className="delbtn" title="Remove row" onClick={() => removeHoursRow(i)}>
+                        {Icons.trash}
+                      </button>
+                    </div>
+                  ))}
+                  {!hoursRows.length && (
+                    <p className="d" style={{ margin: "0 0 12px" }}>No hours set — add a row above.</p>
+                  )}
+                  <div className="field" style={{ marginTop: 14 }}>
+                    <label>Note under the hours</label>
+                    <input value={hoursNote} placeholder="Closed Sundays & gazetted holidays" onChange={(e) => setHoursNote(e.target.value)} />
+                  </div>
+                  <div className="field" style={{ marginBottom: 0 }}>
+                    <label>Short form (for the home strip &amp; branch cards)</label>
+                    <input value={hoursShort} placeholder="Mon–Sat · 8am–7pm" onChange={(e) => setHoursShort(e.target.value)} />
+                  </div>
+                </div>
+
                 <div className="card set-card">
                   <h3>Social links</h3>
                   <p className="d">Used in the footer and contact page across the site.</p>
@@ -1889,7 +2077,7 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                     Save links
                   </button>
                 </div>
-                <div className="card set-card" style={{ gridColumn: "1 / -1" }}>
+                <div className="card set-card">
                   <h3>Notification emails</h3>
                   <p className="d">
                     Where new trial-booking submissions are emailed. Add up to 5. Leave empty to use the

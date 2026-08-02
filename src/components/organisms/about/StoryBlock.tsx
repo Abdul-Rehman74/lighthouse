@@ -9,24 +9,26 @@ export function StoryBlock() {
           <div>
             <Eyebrow color="text-mint-400">our story</Eyebrow>
             <h2 className="text-3xl md:text-[40px] mt-2 leading-tight">
-              Built for the<br />working mother.
+              For families looking<br />for trusted support.
             </h2>
           </div>
           <div className="text-[17px] text-ink-700 leading-relaxed space-y-4">
             <p>
-              We opened in <strong>2019</strong> with a simple belief: a daycare should never
-              feel like a compromise. A home nanny may be unavailable any day — but a real
-              <em> system </em>shouldn&apos;t ever stop.
+              Since opening in <strong>2019</strong>, Lighthouse has been a guiding light for
+              families, built on the belief that quality care and learning should be accessible
+              to every child. What began as a vision to support busy families has grown into a
+              trusted environment where children from <strong>2 months onwards</strong> are
+              nurtured with care, comfort, and confidence.
             </p>
             <p>
-              Seven years later, we welcome children from <strong>2 months onwards</strong>,
-              in a teacher-monitored, hygienic environment that&apos;s been refined day after day
-              by <strong>22 trained teachers and 5 professional nannies</strong>. Linen, meals,
-              care — all supervised. Every little routine, watched.
+              Over the years, Lighthouse has continued to grow with a dedicated team of{" "}
+              <strong>22 trained teachers and 5 professional nannies</strong>, providing a safe,
+              hygienic, and teacher-monitored environment.
             </p>
             <p>
-              We&apos;ve grown across Rawalpindi because mothers tell other mothers. That&apos;s
-              still our favorite kind of advertising.
+              As a guiding light for children of all abilities, we are committed to creating an
+              inclusive environment where every child is understood, supported, and encouraged to
+              reach their full potential.
             </p>
           </div>
         </div>

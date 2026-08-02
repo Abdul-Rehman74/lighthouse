@@ -275,7 +275,9 @@
 .lh-admin .tcard .acts{display:flex;gap:8px;margin-top:16px;border-top:1px solid var(--cream-100);padding-top:14px}
 
 /* settings */
-.lh-admin .set-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+/* `align-items:start` stops short cards stretching to match a tall neighbour;
+   `dense` lets a half-width card backfill the gap left beside a full-width one. */
+.lh-admin .set-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;align-items:start;grid-auto-flow:row dense}
 @media(max-width:760px){.lh-admin .set-grid{grid-template-columns:1fr}.lh-admin .dash-grid{grid-template-columns:1fr}}
 .lh-admin .set-card{padding:24px}
 .lh-admin .set-card h3{font-family:var(--font-display,Georgia);font-weight:900;font-size:18px;margin:0 0 4px}

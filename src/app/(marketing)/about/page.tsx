@@ -3,7 +3,8 @@ import { AboutHero } from "@/components/organisms/about/AboutHero";
 import { StoryBlock } from "@/components/organisms/about/StoryBlock";
 import { StaffSection } from "@/components/organisms/about/StaffSection";
 import { DailyRoutine } from "@/components/organisms/about/DailyRoutine";
-import { ValuesStrip } from "@/components/organisms/about/ValuesStrip";
+// Kept for now — the client may want the "Four things, every day." strip back.
+// import { ValuesStrip } from "@/components/organisms/about/ValuesStrip";
 import { FAQSection } from "@/components/organisms/about/FAQSection";
 import { CTABanner } from "@/components/organisms/CTABanner";
 import { getFaqs } from "@/lib/site-settings";
@@ -11,7 +12,7 @@ import { getFaqs } from "@/lib/site-settings";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Seven years of caring for Rawalpindi's little ones — meet the Lighthouse team, daily routine, and our values.",
+    "Meet the Lighthouse team — passionate educators caring for Rawalpindi's little ones since 2019.",
 };
 
 export default async function AboutPage() {
@@ -22,9 +23,10 @@ export default async function AboutPage() {
       <StoryBlock />
       <StaffSection />
       <DailyRoutine />
-      <ValuesStrip />
+      {/* Removed at the client's request — uncomment to bring it back. */}
+      {/* <ValuesStrip /> */}
       <FAQSection faqs={faqs} />
-      <CTABanner eyebrow="come visit ✿" title="Words are nice. Visiting is better." />
+      <CTABanner eyebrow="come visit ✿" title="Let Lighthouse be your child's guiding light!" />
     </>
   );
 }

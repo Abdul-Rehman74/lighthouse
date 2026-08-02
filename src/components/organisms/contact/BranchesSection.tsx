@@ -3,11 +3,11 @@ import { WhatsAppButton } from "@/components/atoms/WhatsAppButton";
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { siteConfig } from "@/lib/site-config";
-import { getSiteSettings } from "@/lib/site-settings";
+import { getSiteSettings, getHours } from "@/lib/site-settings";
 import { MapPin, Phone, Clock } from "lucide-react";
 
 export async function BranchesSection() {
-  const settings = await getSiteSettings();
+  const [hours, settings] = await Promise.all([getHours(), getSiteSettings()]);
   return (
     <section className="py-14">
       <Container>
@@ -37,7 +37,7 @@ export async function BranchesSection() {
                       <Phone size={14} /> {b.phone}
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Clock size={14} /> {b.hours}
+                      <Clock size={14} /> {hours.short}
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2.5 mt-5">
