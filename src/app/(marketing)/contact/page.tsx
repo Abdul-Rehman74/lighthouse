@@ -13,14 +13,17 @@ export const metadata: Metadata = {
     "WhatsApp us, fill the form to book a free trial, or visit one of our two branches in Rawalpindi.",
 };
 
-export default function ContactPage() {
+import { getPackages } from "@/lib/site-settings";
+
+export default async function ContactPage() {
+  const { packages } = await getPackages();
   return (
     <>
       <ContactHero />
       <section className="pt-10 pb-14">
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-10 items-start">
-            <BookTrialForm />
+            <BookTrialForm packages={packages} />
             <ContactInfoCard />
           </div>
         </Container>

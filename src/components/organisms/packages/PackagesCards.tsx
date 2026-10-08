@@ -34,7 +34,7 @@ export async function PackagesCards() {
                   </div>
                 )}
                 <div className="text-xs font-extrabold uppercase tracking-[0.1em] text-ink-900">{p.label}</div>
-                <div className="font-display text-[56px] font-extrabold mt-2 leading-none">{p.hours}</div>
+                <div className="font-display text-[36px] sm:text-[40px] font-extrabold mt-2 leading-none">{p.hours}</div>
                 <div className="text-sm mt-1.5 text-ink-700">{p.sub}</div>
 
                 <div className="mt-6 py-5 border-t border-b border-dashed border-ink-900/20">

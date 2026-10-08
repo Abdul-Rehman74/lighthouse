@@ -2,12 +2,11 @@ import { Button } from "@/components/atoms/Button";
 import { WhatsAppButton } from "@/components/atoms/WhatsAppButton";
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
-import { siteConfig } from "@/lib/site-config";
-import { getSiteSettings, getHours } from "@/lib/site-settings";
+import { getSiteSettings, getHours, getPageContent, getBranches } from "@/lib/site-settings";
 import { MapPin, Phone, Clock } from "lucide-react";
 
 export async function BranchesSection() {
-  const [hours, settings] = await Promise.all([getHours(), getSiteSettings()]);
+  const [hours, settings, content, branches] = await Promise.all([getHours(), getSiteSettings(), getPageContent(), getBranches()]);
   return (
     <section className="py-14">
       <Container>
@@ -16,7 +15,7 @@ export async function BranchesSection() {
           <h2 className="text-3xl md:text-[44px] mt-1.5">Two branches in Rawalpindi.</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
-          {siteConfig.branches.map((b, i) => (
+          {branches.map((b, i) => (
             <div
               key={i}
               className="bg-white rounded-[28px] p-9 border-[1.5px] border-cream-200 shadow-soft-sm transition-transform hover:!rotate-0 hover:-translate-y-1"
@@ -32,14 +31,20 @@ export async function BranchesSection() {
                 <div className="flex-1">
                   <h3 className="text-2xl">{b.name}</h3>
                   <p className="text-[15px] text-ink-700 mt-1.5">{b.address}</p>
-                  <div className="flex flex-col gap-1.5 mt-4 text-[13px] text-ink-700">
-                    <div className="flex items-center gap-1.5">
-                      <Phone size={14} /> {b.phone}
+                  {(content.branchPhoneVisible || content.branchHoursVisible) && (
+                    <div className="flex flex-col gap-1.5 mt-4 text-[13px] text-ink-700">
+                      {content.branchPhoneVisible && (
+                        <div className="flex items-center gap-1.5">
+                          <Phone size={14} /> {b.phone}
+                        </div>
+                      )}
+                      {content.branchHoursVisible && (
+                        <div className="flex items-center gap-1.5">
+                          <Clock size={14} /> {hours.short}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Clock size={14} /> {hours.short}
-                    </div>
-                  </div>
+                  )}
                   <div className="flex flex-wrap gap-2.5 mt-5">
                     <Button asChild variant="ghost" size="sm">
                       <a href={b.mapsHref} target="_blank" rel="noreferrer">

@@ -3,7 +3,14 @@ import { Button } from "@/components/atoms/Button";
 import { Container } from "@/components/atoms/Container";
 import { Star } from "@/components/atoms/Star";
 
-export function HeroHome() {
+import { getPageContent } from "@/lib/site-settings";
+
+export async function HeroHome() {
+  const content = await getPageContent();
+  const highlight = content.homeHeroHighlight.trim();
+  const highlightIndex = highlight
+    ? content.homeHeroHeading.toLowerCase().indexOf(highlight.toLowerCase())
+    : -1;
   return (
     <section className="relative overflow-hidden pt-12 md:pt-16 pb-20 md:pb-24">
       <div
@@ -21,39 +28,29 @@ export function HeroHome() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-10 items-center">
           <div className="animate-fade-up">
-            <div
+            {content.homeHeroTagVisible && <div
               className="inline-block bg-coral-300 text-ink-900 px-3.5 py-1.5 rounded-full text-[13px] font-extrabold tracking-[0.04em]"
               style={{ transform: "rotate(-2deg)" }}
             >
-              HELLO, LITTLE FRIEND ✯
-            </div>
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[88px] mt-5 leading-[0.95] font-black">
-              <span className="block">Every day at</span>
-              <span className="block">
+              {content.homeHeroIntro}
+            </div>}
+            <h1 className={`text-5xl sm:text-6xl lg:text-[64px] leading-[1.08] font-black ${content.homeHeroTagVisible ? "mt-5" : ""}`}>
+              {highlightIndex < 0 ? content.homeHeroHeading : <>
+                {content.homeHeroHeading.slice(0, highlightIndex)}
                 <span className="relative inline-block text-coral-400">
-                  Lighthouse
-                  <svg
-                    className="absolute -bottom-2 left-0 w-full"
-                    height="18"
-                    viewBox="0 0 320 18"
-                    preserveAspectRatio="none"
-                    aria-hidden
-                  >
-                    <path
-                      d="M5 13 Q 80 -2, 160 9 T 315 9"
-                      stroke="#FFD23F"
-                      strokeWidth="6"
-                      fill="none"
-                      strokeLinecap="round"
-                    />
+                  {content.homeHeroHeading.slice(highlightIndex, highlightIndex + highlight.length)}
+                  <svg className="absolute -bottom-2 left-0 w-full" height="18" viewBox="0 0 320 18" preserveAspectRatio="none" aria-hidden>
+                    <path d="M5 13 Q 80 -2, 160 9 T 315 9" stroke="#FFD23F" strokeWidth="6" fill="none" strokeLinecap="round" />
                   </svg>
                 </span>
-              </span>
-              <span className="block">is the brightest.</span>
+                {content.homeHeroHeading.slice(highlightIndex + highlight.length)}
+              </>}
             </h1>
-            <p className="text-lg mt-7 text-ink-700 max-w-[460px] leading-relaxed">
-              For seven years we&apos;ve been Rawalpindi&apos;s favorite daycare —
-              built around joyful play, real safety, and 22 teachers who genuinely love what they do.
+            <p className="text-xl sm:text-2xl mt-7 font-bold text-ink-900 max-w-[480px] leading-snug">
+              {content.homeHeroSubheading}
+            </p>
+            <p className="text-lg mt-4 text-ink-700 max-w-[460px] leading-relaxed">
+              {content.homeHeroDescription}
             </p>
             <div className="flex flex-wrap gap-4 mt-9 items-center">
               <Button asChild variant="sun">

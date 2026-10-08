@@ -71,6 +71,12 @@ export const Icons = {
       <path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </S>
   ),
+  content: (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7">
+      <path d="M5 2.5h7l3 3v12H5z" strokeLinejoin="round" />
+      <path d="M12 2.5v3h3M8 9h4M8 12h4M8 15h2" strokeLinecap="round" />
+    </svg>
+  ),
   settings: (
     <S>
       <circle cx="12" cy="12" r="3" />

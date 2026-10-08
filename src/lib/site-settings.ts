@@ -1,4 +1,5 @@
 import "server-only";
+import { DEFAULT_PAGE_CONTENT, resolvePageContent, type PageContent } from "@/lib/page-content";
 import { cache } from "react";
 import {
   getPublicSettings,
@@ -315,4 +316,22 @@ export const getComparisonTable = cache(async (): Promise<ComparisonTableData> =
   } catch {
     return { columns: DEFAULT_COMPARISON_COLUMNS, rows: DEFAULT_COMPARISON_ROWS };
   }
+});
+
+/** Editable page copy and visibility, with defaults for old or unavailable DBs. */
+export const getPageContent = cache(async (): Promise<PageContent> => {
+  try {
+    return resolvePageContent(await settingsDoc());
+  } catch {
+    return { ...DEFAULT_PAGE_CONTENT };
+  }
+});
+
+/** Keep branch card names, map captions, and accessible map titles consistent. */
+export const getBranches = cache(async () => {
+  const content = await getPageContent();
+  return siteConfig.branches.map((branch, index) => ({
+    ...branch,
+    name: index === 0 ? content.branchOneName : content.branchTwoName,
+  }));
 });

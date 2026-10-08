@@ -1,7 +1,7 @@
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { cn } from "@/lib/utils";
-import { getComparisonTable } from "@/lib/site-settings";
+import { getPageContent, getComparisonTable } from "@/lib/site-settings";
 
 function Cell({ value, highlight }: { value: string; highlight?: boolean }) {
   const dim = value === "—" || value === "";
@@ -20,6 +20,8 @@ function Cell({ value, highlight }: { value: string; highlight?: boolean }) {
 }
 
 export async function ComparisonTable() {
+  const content = await getPageContent();
+  if (!content.comparisonVisible) return null;
   const { columns, rows } = await getComparisonTable();
   if (!columns.length || !rows.length) return null;
   const gridCols = `2fr repeat(${columns.length}, 1fr)`;

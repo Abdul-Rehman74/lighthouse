@@ -4,7 +4,10 @@ import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { Star } from "@/components/atoms/Star";
 
-export function LearningLoungePeek() {
+import { getPageContent } from "@/lib/site-settings";
+
+export async function LearningLoungePeek() {
+  const content = await getPageContent();
   return (
     <section className="py-16 md:py-24">
       <Container>
@@ -21,14 +24,10 @@ export function LearningLoungePeek() {
           <div className="relative text-center max-w-[820px] mx-auto">
             <Eyebrow color="text-coral-400">✯ new at lighthouse</Eyebrow>
             <h2 className="text-4xl md:text-5xl lg:text-[64px] mt-3 leading-[0.98] font-black">
-              Every child belongs at the
-              <br />
-              <span className="text-coral-400">Learning Lounge.</span>
+              {content.homeLoungeHeading}
             </h2>
             <p className="text-lg md:text-[19px] mt-6 text-ink-700 leading-relaxed max-w-[580px] mx-auto">
-              Because every child learns differently — a dedicated program alongside our Montessori
-              &amp; daycare, with gentle, inclusive support woven right into the day, so every child
-              belongs from the very first morning.
+              {content.homeLoungeDescription}
             </p>
           </div>
 

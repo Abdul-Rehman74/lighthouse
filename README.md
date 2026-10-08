@@ -40,6 +40,29 @@ The admin panel is a real, database-backed app (not a static mockup):
   (Vercel Blob / Cloudinary / S3) and store URLs instead — only `addPhoto` in
   `src/lib/admin-data.ts` and the upload handler need to change.
 
+### Editable page content and visibility
+
+In **Admin → Content management**, edit the About story,
+FAQ contact message, Home hero/promise/Learning Lounge copy and strip chips,
+Gallery introduction, Contact introduction and WhatsApp message, and the Packages
+and Gallery trial banners. Package names and hours in Admin → Packages also
+control the Contact booking dropdown. Story paragraphs are separated
+with blank lines. The FAQ contact message links to `/contact`.
+Content is grouped under Home, About, Contact, Packages, and Gallery headings.
+Both branch names are editable here and appear on the branch cards and maps;
+their defaults are “Main branch” and “Branch 2”.
+
+The Home hero has separate heading, subheading, paragraph, and tag text fields.
+Its highlighted word or phrase uses the original coral text and yellow underline
+on the first matching phrase (case insensitive). Leave it blank for plain text.
+The hero tag is retained and hidden by default; enable “Show Home hero tag” to restore it.
+
+The Gallery weekly photo update note, package comparison table, “All packages include” section, branch-card phone numbers, and branch-card hours
+are hidden by default and can each be switched back on. Their content is retained;
+other contact details, opening hours, and branch buttons are unaffected.
+Existing databases use the client-approved defaults for missing settings fields.
+Saving from the admin persists overrides without a separate database migration.
+
 ### Environment variables
 
 Copy `.env.example` → `.env.local` and fill in:

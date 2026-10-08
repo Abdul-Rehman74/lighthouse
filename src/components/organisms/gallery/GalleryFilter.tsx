@@ -51,7 +51,7 @@ const tapes = [
   "rgba(95,179,240,0.55)",
 ];
 
-export function GalleryFilter({ photos }: { photos?: GalleryPhoto[] }) {
+export function GalleryFilter({ photos, showUpdateNote = false }: { photos?: GalleryPhoto[]; showUpdateNote?: boolean }) {
   const [active, setActive] = useState<Filter>("All");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
@@ -118,9 +118,11 @@ export function GalleryFilter({ photos }: { photos?: GalleryPhoto[] }) {
         {filtered.length === 0 && (
           <p className="text-center text-ink-500 py-10">No photos in this category yet.</p>
         )}
+        {showUpdateNote && (
         <p className="text-[13px] text-ink-500 text-center mt-10">
           New photos uploaded by our teachers every week · Follow us on Instagram for daily updates
         </p>
+        )}
       </Container>
       <Lightbox
         items={filtered.filter((p) => p.src).map((p) => ({ src: p.src!, caption: p.cap }))}

@@ -1,10 +1,9 @@
 import { WhatsAppButton } from "@/components/atoms/WhatsAppButton";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
-import { siteConfig } from "@/lib/site-config";
-import { getSiteSettings, getHours } from "@/lib/site-settings";
+import { getSiteSettings, getHours, getPageContent } from "@/lib/site-settings";
 
 export async function ContactInfoCard() {
-  const [settings, hours] = await Promise.all([getSiteSettings(), getHours()]);
+  const [settings, hours, content] = await Promise.all([getSiteSettings(), getHours(), getPageContent()]);
   return (
     <div className="flex flex-col gap-5">
       <div className="bg-ink-900 text-cream-50 rounded-[28px] p-8 relative overflow-hidden">
@@ -19,7 +18,7 @@ export async function ContactInfoCard() {
             💬 {settings.phoneDisplay}
           </WhatsAppButton>
           <p className="text-[13px] text-cream-50/70 mt-3.5 leading-relaxed">
-            We answer within an hour during open hours ({hours.short}).
+            {content.contactWhatsappMessage}
           </p>
         </div>
       </div>

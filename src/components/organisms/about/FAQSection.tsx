@@ -5,13 +5,14 @@ import * as Accordion from "@radix-ui/react-accordion";
 import { Plus, Minus } from "lucide-react";
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
+import type { PageContent } from "@/lib/page-content";
 import type { FaqEntry } from "@/lib/site-settings";
 
 /**
  * Client component (Radix accordion), so the About page fetches the admin-managed
  * FAQs server-side and passes them in.
  */
-export function FAQSection({ faqs }: { faqs: FaqEntry[] }) {
+export function FAQSection({ faqs, content }: { faqs: FaqEntry[]; content: Pick<PageContent, "faqHeading" | "faqDescription"> }) {
   if (!faqs.length) return null;
 
   return (
@@ -21,17 +22,12 @@ export function FAQSection({ faqs }: { faqs: FaqEntry[] }) {
           <div className="lg:sticky lg:top-32">
             <Eyebrow color="text-coral-400">parents ask</Eyebrow>
             <h2 className="text-4xl md:text-5xl mt-2 leading-tight">
-              Anything on<br />your mind?
+              {content.faqHeading}
             </h2>
             <p className="text-base text-ink-700 mt-4 max-w-[320px]">
-              Have more questions? Our admin team is here to guide you — visit our{" "}
-              <Link
-                href="/contact"
-                className="font-bold underline underline-offset-4 decoration-2 text-ink-900 hover:text-coral-400 transition-colors"
-              >
-                Contact page
+              <Link href="/contact" className="hover:text-coral-400 underline underline-offset-4">
+                {content.faqDescription}
               </Link>
-              , we&apos;d love to hear from you.
             </p>
           </div>
           <Accordion.Root type="single" collapsible defaultValue="item-0" className="flex flex-col gap-3.5">

@@ -11,7 +11,11 @@ const items = [
   { Icon: Trees, t: "Outdoor time", d: "Fresh air every day, weather permitting." },
 ];
 
-export function IncludedSection() {
+import { getPageContent } from "@/lib/site-settings";
+
+export async function IncludedSection() {
+  const content = await getPageContent();
+  if (!content.includedVisible) return null;
   return (
     <section className="py-14">
       <Container>

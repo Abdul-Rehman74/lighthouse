@@ -6,6 +6,8 @@ import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { FormField, SelectField, TextAreaField } from "@/components/atoms/FormField";
 import { DatePickerField } from "@/components/atoms/DatePickerField";
 import { submitTrialBooking } from "@/app/actions/booking";
+import type { Package } from "@/lib/admin-data";
+import { packageOption } from "@/lib/package-copy";
 import { trackMetaEvent } from "@/lib/pixel";
 
 const initial = {
@@ -13,12 +15,14 @@ const initial = {
   age: "",
   date: "",
   phone: "",
-  package: "School day (8–3)",
+  package: "",
   notes: "",
 };
 
-export function BookTrialForm() {
-  const [data, setData] = useState(initial);
+export function BookTrialForm({ packages }: { packages: Pick<Package, "id" | "label" | "hours" | "highlight">[] }) {
+  const defaultPackage = packages.find((p) => p.highlight) ?? packages[0];
+  const initialData = { ...initial, package: defaultPackage ? packageOption(defaultPackage) : "Not sure yet — please advise" };
+  const [data, setData] = useState(initialData);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -29,7 +33,7 @@ export function BookTrialForm() {
       setData((d) => ({ ...d, [k]: e.target.value }));
 
   const reset = () => {
-    setData(initial);
+    setData(initialData);
     setSent(false);
     setError(null);
   };
@@ -90,9 +94,9 @@ export function BookTrialForm() {
         placeholder="+92 3__ _______"
       />
       <SelectField label="Package interested in" value={data.package} onChange={set("package")}>
-        <option>Half day (8–12) — Rs. 22,000</option>
-        <option>School day (8–3)</option>
-        <option>Full day (8–6) — Rs. 28,000</option>
+        {packages.map((p) => (
+          <option key={p.id} value={packageOption(p)}>{packageOption(p)}</option>
+        ))}
         <option>Not sure yet — please advise</option>
       </SelectField>
       <TextAreaField

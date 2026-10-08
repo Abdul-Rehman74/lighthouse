@@ -41,7 +41,7 @@ export async function PackagesPeek() {
                 </div>
               )}
               <div className="text-xs font-extrabold uppercase tracking-[0.1em] text-ink-900">{p.label}</div>
-              <div className="font-display text-[60px] font-extrabold mt-2.5 leading-none">{p.hours}</div>
+              <div className="font-display text-[36px] sm:text-[40px] font-extrabold mt-2.5 leading-none">{p.hours}</div>
               <div className="text-sm mt-2 text-ink-700">{p.sub}</div>
               <Button asChild variant="primary" size="sm" className="mt-7">
                 <Link href="/packages">See pricing →</Link>

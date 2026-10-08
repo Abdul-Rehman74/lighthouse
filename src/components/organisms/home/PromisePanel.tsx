@@ -3,7 +3,10 @@ import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 import { Star } from "@/components/atoms/Star";
 
-export function PromisePanel() {
+import { getPageContent } from "@/lib/site-settings";
+
+export async function PromisePanel() {
+  const content = await getPageContent();
   return (
     <section className="py-16 md:py-24">
       <Container>
@@ -26,18 +29,13 @@ export function PromisePanel() {
           <div className="relative grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-10 md:gap-14 items-start">
             <div>
               <Eyebrow color="text-sun-300">our promise</Eyebrow>
-              <h2 className="text-4xl md:text-5xl lg:text-[52px] mt-2 leading-none">
-                Your child<br />
-                is <span className="italic text-coral-300">never</span><br />
-                alone.
+              <h2 className="text-4xl md:text-5xl lg:text-[52px] mt-2 leading-tight whitespace-pre-line">
+                {content.homePromiseHeading}
               </h2>
             </div>
             <div>
               <p className="text-lg md:text-xl lg:text-[22px] leading-relaxed text-cream-50/90">
-                A home nanny may be unavailable any day — but at Lighthouse, our
-                <em className="text-sun-300 not-italic font-display font-bold"> system never stops</em>.
-                Linen washed, meals supervised, every cuddle and nap monitored. That&apos;s the
-                difference seven years of practice makes.
+                {content.homePromiseDescription}
               </p>
             </div>
           </div>

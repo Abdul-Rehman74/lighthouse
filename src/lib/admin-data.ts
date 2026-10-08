@@ -1,4 +1,6 @@
 import "server-only";
+import { PACKAGE_COPY, resolvePackageCopy } from "@/lib/package-copy";
+import { DEFAULT_PAGE_CONTENT, resolvePageContent, type PageContent } from "@/lib/page-content";
 import { ObjectId } from "mongodb";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
@@ -187,30 +189,24 @@ export interface Package {
 export const DEFAULT_PACKAGES: Package[] = [
   {
     id: "half",
-    label: "Half day",
-    hours: "8 — 12",
-    sub: "Mornings + lunch",
+    ...PACKAGE_COPY.half,
     price: "22,000",
     highlight: false,
     features: ["Breakfast & morning snack", "Hot lunch supervised", "Montessori circle", "Outdoor play time"],
   },
   {
     id: "school",
-    label: "School day",
-    hours: "8 — 3",
-    sub: "Most popular",
+    ...PACKAGE_COPY.school,
     price: "25,000",
     highlight: true,
-    features: ["Everything in Half day", "Afternoon nap", "Art & sensory time", "Pre-K readiness activities"],
+    features: ["Everything in Half-Day Discovery Package", "Afternoon nap", "Art & sensory time", "Pre-K readiness activities"],
   },
   {
     id: "full",
-    label: "Full day",
-    hours: "8 — 6",
-    sub: "For working parents",
+    ...PACKAGE_COPY.full,
     price: "28,000",
     highlight: false,
-    features: ["Everything in School day", "Afternoon outdoor play", "Evening snack", "Late pickup until 6pm"],
+    features: ["Everything in Extended Day Package", "Afternoon outdoor play", "Evening snack", "Late pickup until 7pm"],
   },
 ];
 
@@ -249,7 +245,7 @@ export const DEFAULT_COMPARISON_ROWS: ComparisonRow[] = [
   { label: "Monthly fee (Rs.)", values: ["22,000", "25,000", "28,000"] },
 ];
 
-export interface AdminSettings {
+export interface AdminSettings extends PageContent {
   name: string;
   phone: string;
   layout: "sidebar" | "topnav";
@@ -298,7 +294,8 @@ async function col(name: string) {
 
 /* ----------------------------- Settings ----------------------------- */
 
-interface SettingsDoc {
+interface SettingsDoc extends Partial<PageContent> {
+  packagesCopyVersion?: number;
   _id: string;
   passwordHash: string;
   name: string;
@@ -342,6 +339,7 @@ async function ensureSettings(): Promise<SettingsDoc> {
   const doc: SettingsDoc = {
     _id: SETTINGS_ID,
     passwordHash: bcrypt.hashSync(initialPw, 10),
+    ...DEFAULT_PAGE_CONTENT,
     name: siteConfig.name,
     phone: siteConfig.whatsapp.display,
     layout: "sidebar",
@@ -351,6 +349,7 @@ async function ensureSettings(): Promise<SettingsDoc> {
       facebook: siteConfig.social.facebook.href,
     },
     packages: DEFAULT_PACKAGES,
+    packagesCopyVersion: 1,
     packagesNote: DEFAULT_PACKAGES_NOTE,
     comparisonColumns: DEFAULT_COMPARISON_COLUMNS,
     comparisonRows: DEFAULT_COMPARISON_ROWS,
@@ -368,6 +367,7 @@ async function ensureSettings(): Promise<SettingsDoc> {
 export async function getPublicSettings(): Promise<AdminSettings> {
   const s = await ensureSettings();
   return {
+    ...resolvePageContent(s),
     name: s.name,
     phone: s.phone,
     layout: s.layout,
@@ -376,7 +376,7 @@ export async function getPublicSettings(): Promise<AdminSettings> {
       instagram: s.social?.instagram ?? "",
       facebook: s.social?.facebook ?? "",
     },
-    packages: s.packages?.length ? s.packages : DEFAULT_PACKAGES,
+    packages: resolvePackageCopy(s.packages?.length ? s.packages : DEFAULT_PACKAGES, s.packagesCopyVersion),
     packagesNote: s.packagesNote ?? DEFAULT_PACKAGES_NOTE,
     comparisonColumns: s.comparisonColumns?.length ? s.comparisonColumns : DEFAULT_COMPARISON_COLUMNS,
     comparisonRows: s.comparisonRows?.length ? s.comparisonRows : DEFAULT_COMPARISON_ROWS,
@@ -422,6 +422,12 @@ export async function updateSettings(patch: Partial<AdminSettings>): Promise<voi
   const c = await col("settings");
   await ensureSettings();
   const $set: Record<string, unknown> = {};
+  for (const key of Object.keys(DEFAULT_PAGE_CONTENT) as (keyof PageContent)[]) {
+    const value = patch[key];
+    if (typeof value === typeof DEFAULT_PAGE_CONTENT[key]) {
+      $set[key] = typeof value === "string" ? value.trim() : value;
+    }
+  }
   if (typeof patch.name === "string") $set.name = patch.name;
   if (typeof patch.phone === "string") $set.phone = patch.phone;
   if (patch.layout === "sidebar" || patch.layout === "topnav") $set.layout = patch.layout;
@@ -442,6 +448,7 @@ export async function updateSettings(patch: Partial<AdminSettings>): Promise<voi
     };
   }
   if (Array.isArray(patch.packages)) {
+    $set.packagesCopyVersion = 1;
     $set.packages = patch.packages.slice(0, 8).map((p, i) => ({
       id: (p.id && String(p.id)) || `pkg-${Date.now()}-${i}`,
       label: String(p.label ?? "").trim(),

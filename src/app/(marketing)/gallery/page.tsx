@@ -3,7 +3,7 @@ import { GalleryHero } from "@/components/organisms/gallery/GalleryHero";
 import { GalleryFilter } from "@/components/organisms/gallery/GalleryFilter";
 import { VideoTestimonials } from "@/components/organisms/gallery/VideoTestimonials";
 import { GalleryCTA } from "@/components/organisms/gallery/GalleryCTA";
-import { getGalleryPhotos, getPublicTestimonials } from "@/lib/site-settings";
+import { getGalleryPhotos, getPublicTestimonials, getPageContent } from "@/lib/site-settings";
 
 export const metadata: Metadata = {
   title: "Gallery",
@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 };
 
 export default async function GalleryPage() {
-  const [photos, testimonials] = await Promise.all([getGalleryPhotos(), getPublicTestimonials()]);
+  const [photos, testimonials, content] = await Promise.all([getGalleryPhotos(), getPublicTestimonials(), getPageContent()]);
   return (
     <>
       <GalleryHero />
-      <GalleryFilter photos={photos} />
+      <GalleryFilter photos={photos} showUpdateNote={content.galleryUpdateNoteVisible} />
       <VideoTestimonials items={testimonials} />
       <GalleryCTA />
     </>

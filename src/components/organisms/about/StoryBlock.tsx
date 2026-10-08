@@ -1,7 +1,10 @@
 import { Container } from "@/components/atoms/Container";
 import { Eyebrow } from "@/components/atoms/Eyebrow";
 
-export function StoryBlock() {
+import { getPageContent } from "@/lib/site-settings";
+
+export async function StoryBlock() {
+  const content = await getPageContent();
   return (
     <section className="py-14">
       <Container>
@@ -9,27 +12,13 @@ export function StoryBlock() {
           <div>
             <Eyebrow color="text-mint-400">our story</Eyebrow>
             <h2 className="text-3xl md:text-[40px] mt-2 leading-tight">
-              For families looking<br />for trusted support.
+              {content.storyHeading}
             </h2>
           </div>
           <div className="text-[17px] text-ink-700 leading-relaxed space-y-4">
-            <p>
-              Since opening in <strong>2019</strong>, Lighthouse has been a guiding light for
-              families, built on the belief that quality care and learning should be accessible
-              to every child. What began as a vision to support busy families has grown into a
-              trusted environment where children from <strong>2 months onwards</strong> are
-              nurtured with care, comfort, and confidence.
-            </p>
-            <p>
-              Over the years, Lighthouse has continued to grow with a dedicated team of{" "}
-              <strong>22 trained teachers and 5 professional nannies</strong>, providing a safe,
-              hygienic, and teacher-monitored environment.
-            </p>
-            <p>
-              As a guiding light for children of all abilities, we are committed to creating an
-              inclusive environment where every child is understood, supported, and encouraged to
-              reach their full potential.
-            </p>
+            {content.storyBody.split(/\n\s*\n/).filter(Boolean).map((paragraph, i) => (
+              <p key={i} className="whitespace-pre-line">{paragraph}</p>
+            ))}
           </div>
         </div>
       </Container>

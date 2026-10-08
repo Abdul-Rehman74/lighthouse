@@ -7,7 +7,7 @@ import { DailyRoutine } from "@/components/organisms/about/DailyRoutine";
 // import { ValuesStrip } from "@/components/organisms/about/ValuesStrip";
 import { FAQSection } from "@/components/organisms/about/FAQSection";
 import { CTABanner } from "@/components/organisms/CTABanner";
-import { getFaqs } from "@/lib/site-settings";
+import { getPageContent, getFaqs } from "@/lib/site-settings";
 
 export const metadata: Metadata = {
   title: "About",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AboutPage() {
-  const faqs = await getFaqs("about");
+  const [faqs, content] = await Promise.all([getFaqs("about"), getPageContent()]);
   return (
     <>
       <AboutHero />
@@ -25,7 +25,7 @@ export default async function AboutPage() {
       <DailyRoutine />
       {/* Removed at the client's request — uncomment to bring it back. */}
       {/* <ValuesStrip /> */}
-      <FAQSection faqs={faqs} />
+      <FAQSection faqs={faqs} content={content} />
       <CTABanner eyebrow="come visit ✿" title="Let Lighthouse be your child's guiding light!" />
     </>
   );

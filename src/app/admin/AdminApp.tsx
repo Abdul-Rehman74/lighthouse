@@ -21,6 +21,7 @@ import type {
 import { type VideoRef, parseVideoLink } from "@/lib/video";
 import { LighthouseMark, Icons, KPI_ICONS, PlayIcon, StarIcon, HomeIcon } from "./icons";
 import * as actions from "./actions";
+import { resolvePageContent, type PageContent } from "@/lib/page-content";
 
 const CLOUDINARY_ENABLED = !!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
@@ -94,7 +95,7 @@ const timeAgo = (ts: number) => {
 };
 const waLink = (phone: string) => `https://wa.me/${phone.replace(/[^0-9]/g, "")}`;
 
-type View = "dashboard" | "submissions" | "gallery" | "testimonials" | "team" | "routine" | "faqs" | "packages" | "settings";
+type View = "dashboard" | "submissions" | "gallery" | "testimonials" | "team" | "routine" | "faqs" | "packages" | "content" | "settings";
 const NAV: { v: View; label: string; hand: string; icon: React.ReactNode }[] = [
   { v: "dashboard", label: "Dashboard", hand: "welcome back ✿", icon: Icons.dashboard },
   { v: "submissions", label: "Submissions", hand: "trial bookings", icon: Icons.submissions },
@@ -104,7 +105,84 @@ const NAV: { v: View; label: string; hand: string; icon: React.ReactNode }[] = [
   { v: "routine", label: "Daily routine", hand: "a typical day", icon: Icons.routine },
   { v: "faqs", label: "FAQs", hand: "parents ask", icon: Icons.faq },
   { v: "packages", label: "Packages", hand: "pricing", icon: Icons.packages },
+  { v: "content", label: "Content management", hand: "website content", icon: Icons.content },
   { v: "settings", label: "Settings", hand: "preferences", icon: Icons.settings },
+];
+
+type ContentTextKey = { [K in keyof PageContent]: PageContent[K] extends string ? K : never }[keyof PageContent];
+type ContentVisibilityKey = { [K in keyof PageContent]: PageContent[K] extends boolean ? K : never }[keyof PageContent];
+const CONTENT_PAGES: {
+  title: string;
+  fields: [ContentTextKey, string, boolean][];
+  switches: [ContentVisibilityKey, string][];
+}[] = [
+  {
+    title: "Home",
+    fields: [
+      ["homeHeroHeading", "hero heading", true],
+      ["homeHeroHighlight", "hero highlighted word or phrase (first match; blank for none)", false],
+      ["homeHeroSubheading", "hero subheading", true],
+      ["homeHeroDescription", "hero description", true],
+      ["homeHeroIntro", "hero tag text", false],
+      ["homePromiseHeading", "promise heading (one line per statement)", true],
+      ["homePromiseDescription", "promise description", true],
+      ["homeDaysChip", "days chip", false],
+      ["homeSafetyChip", "safety chip", false],
+      ["homeLoungeHeading", "Learning Lounge heading", false],
+      ["homeLoungeDescription", "Learning Lounge description", true],
+    ],
+    switches: [
+      ["homeHeroTagVisible", "Show Home hero tag"],
+    ],
+  },
+  {
+    title: "About",
+    fields: [
+      ["storyHeading", "story heading", false],
+      ["storyBody", "story paragraphs (separate with a blank line)", true],
+      ["faqHeading", "FAQ heading", false],
+      ["faqDescription", "FAQ contact message (links to Contact)", true],
+    ],
+    switches: [
+    ],
+  },
+  {
+    title: "Contact",
+    fields: [
+      ["contactHeading", "heading", false],
+      ["contactDescription", "introduction", true],
+      ["contactWhatsappMessage", "WhatsApp message", false],
+      ["branchOneName", "first branch name", false],
+      ["branchTwoName", "second branch name", false],
+    ],
+    switches: [
+      ["branchPhoneVisible", "Show phone numbers on branch cards"],
+      ["branchHoursVisible", "Show opening hours on branch cards"],
+    ],
+  },
+  {
+    title: "Packages",
+    fields: [
+      ["packagesCtaHeading", "trial banner heading", false],
+      ["packagesCtaDescription", "trial banner description", true],
+    ],
+    switches: [
+      ["includedVisible", "Show All packages include section"],
+      ["comparisonVisible", "Show package comparison table"],
+    ],
+  },
+  {
+    title: "Gallery",
+    fields: [
+      ["galleryCtaHeading", "visit banner heading", false],
+      ["galleryCtaDescription", "visit banner description", true],
+      ["galleryHeading", "heading", false],
+      ["galleryDescription", "introduction", true],
+    ],
+    switches: [
+      ["galleryUpdateNoteVisible", "Show Gallery weekly photo update note"],
+    ],
+  },
 ];
 
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2MB per photo (stored as base64 in MongoDB)
@@ -628,6 +706,20 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
 
   /* ----------------------------- settings ----------------------------- */
 
+  const [pageContent, setPageContent] = useState<PageContent>(() => resolvePageContent(initialSettings));
+  const [savingContent, setSavingContent] = useState(false);
+  const savePageContent = async () => {
+    setSavingContent(true);
+    try {
+      await actions.saveSettings(pageContent);
+      setSettings((s) => ({ ...s, ...pageContent }));
+      showToast("Page content and visibility saved");
+    } catch {
+      showToast("Couldn't save page content");
+    } finally {
+      setSavingContent(false);
+    }
+  };
   const [newPw, setNewPw] = useState("");
   const [setName, setSetName] = useState(initialSettings.name);
   const [setPhone, setSetPhone] = useState(initialSettings.phone);
@@ -1780,7 +1872,7 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                 </div>
               </div>
               <p className="d" style={{ color: "var(--ink-500)", fontSize: 13, marginBottom: 18 }}>
-                These show on the public Packages page and the home page preview. Card colours and the
+                These show on the public Packages page, home preview, and Contact booking dropdown. Card colours and the
                 tilt are styled automatically; mark one tier as “most popular”.
               </p>
               <div className="set-grid">
@@ -1959,6 +2051,50 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
             </section>
           )}
 
+          {/* ---------------- CONTENT MANAGEMENT ---------------- */}
+          {view === "content" && (
+            <section>
+              <div className="sect-head">
+                <div>
+                  <span className="hand" style={{ color: "var(--coral)", fontSize: 15 }}>
+                    website content
+                  </span>
+                  <h2>Content management</h2>
+                </div>
+              </div>
+              <p className="d">Edit each page’s text below. Hidden sections retain their content and can be switched back on.</p>
+              <div className="set-grid">
+                {CONTENT_PAGES.map((page) => (
+                  <div className="card set-card" key={page.title} style={{ gridColumn: "1 / -1" }}>
+                    <h3>{page.title}</h3>
+                    {page.fields.map(([key, label, multiline]) => (
+                      <div className="field" key={key}>
+                        <label htmlFor={`content-${key}`}>{label}</label>
+                        {multiline ? (
+                          <textarea id={`content-${key}`} rows={key === "storyBody" ? 9 : 3} disabled={savingContent} value={pageContent[key]}
+                            onChange={(e) => setPageContent((s) => ({ ...s, [key]: e.target.value }))} />
+                        ) : (
+                          <input id={`content-${key}`} disabled={savingContent} value={pageContent[key]}
+                            onChange={(e) => setPageContent((s) => ({ ...s, [key]: e.target.value }))} />
+                        )}
+                      </div>
+                    ))}
+                    {page.switches.map(([key, label]) => (
+                      <label key={key} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                        <input type="checkbox" checked={pageContent[key]} disabled={savingContent}
+                          onChange={(e) => setPageContent((s) => ({ ...s, [key]: e.target.checked }))} />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <button className="btn-s bs-ink" style={{ marginTop: 24 }} disabled={savingContent} onClick={savePageContent}>
+                {savingContent ? "Saving…" : "Save page content & visibility"}
+              </button>
+            </section>
+          )}
+
           {/* ---------------- SETTINGS ---------------- */}
           {view === "settings" && (
             <section>
@@ -2022,8 +2158,8 @@ export function AdminApp({ initialSubmissions, initialPhotos, initialTestimonial
                     </div>
                   </div>
                   <p className="d">
-                    Used everywhere times appear — the home strip, footer, contact page and branch
-                    cards. Add a row per schedule (e.g. weekdays and Saturday).
+                    Used in the footer, contact page and branch
+                    cards when enabled. Edit the first two home-strip chips in Content management under Home. Add a row per schedule (e.g. weekdays and Saturday).
                   </p>
                   {hoursRows.map((h, i) => (
                     <div
