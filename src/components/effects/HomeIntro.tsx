@@ -15,7 +15,7 @@ function hasSeenWelcome() {
   catch { return welcomeSeen; }
 }
 
-// In-memory fallback for client navigation when browser storage is unavailable.
+// Play the entrance on every page load, but skip repeat client-side navigation.
 let introSeen = false;
 
 /**
@@ -92,8 +92,8 @@ export function HomeIntro() {
   }, [finish]);
 
   useEffect(() => {
-    // Skip returning visitors, including after a refresh or browser restart.
-    if ((hasSeenWelcome() || introSeen) && !playedRef.current) {
+    // The popup's saved preference must not suppress the lighthouse entrance.
+    if (introSeen && !playedRef.current) {
       setShowPortal(false);
       return;
     }
