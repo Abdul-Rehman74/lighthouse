@@ -37,8 +37,8 @@ export function useHarbourMotion() {
         const turn = Math.sin(phase) * 2;
         boat.current?.setAttribute("transform", `translate(${x} ${y}) skewX(${turn}) scale(${scale}) translate(-157 -492)`);
 
-        const waveTime = elapsed % 9;
-        const lift = smooth((waveTime - 2) / .7) * (1 - smooth((waveTime - 5.5) / .7));
+        const waveTime = elapsed % 4.5;
+        const lift = smooth((waveTime - .35) / .45) * (1 - smooth((waveTime - 2.9) / .45));
         const greeting = lift * (-112 + Math.sin(waveTime * 8) * 12);
         arm.current?.setAttribute("transform", `rotate(${greeting} 169 413)`);
         head.current?.setAttribute("transform", `rotate(${Math.sin(elapsed * .6) * 5 - lift * 5} 155 400)`);
