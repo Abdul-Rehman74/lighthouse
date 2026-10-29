@@ -1,0 +1,131 @@
+.scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #e7f1ef;
+  isolation: isolate;
+}
+
+.scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgb(255 252 244 / 96%) 0%, rgb(255 252 244 / 90%) 32%, rgb(255 252 244 / 50%) 48%, transparent 67%);
+}
+
+.art {
+  display: block;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  max-width: 1440px;
+  height: auto;
+  overflow: visible;
+}
+
+/* Keep the scene at its intended scale on wide monitors. Extend the sea
+   beneath the copy instead of enlarging (and cropping) the illustration. */
+@media (min-width: 1440px) {
+  .scene::before {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 296px;
+    background: linear-gradient(#a1c8c8, #79b3ba 28%, #609fae 65%, #478a9e);
+    pointer-events: none;
+  }
+}
+
+.wave {
+  transform-origin: 0 0;
+  animation: wave 4.8s ease-in-out infinite;
+}
+
+.waveLater {
+  animation-delay: -2.3s;
+  animation-duration: 5.7s;
+}
+
+.beam {
+  transform-origin: 1165px 266px;
+  animation: beam 12s ease-in-out infinite;
+}
+
+.lantern { animation: lantern 5s ease-in-out infinite; }
+
+.wake { animation: reflection 3s ease-in-out infinite; }
+
+@keyframes lantern {
+  0%, 100% { opacity: .75; }
+  50% { opacity: 1; }
+}
+
+.cloud {
+  animation: cloud 14s ease-in-out infinite;
+}
+
+.cloudLater {
+  animation-duration: 19s;
+  animation-delay: -8s;
+}
+
+.water {
+  animation: water 7s ease-in-out infinite;
+}
+
+.waterLater {
+  animation: water 9s ease-in-out infinite reverse;
+  animation-delay: -3.5s;
+  animation-duration: 9s;
+}
+
+.shoreline {
+  animation: reflection 8s ease-in-out infinite;
+}
+
+.reflection {
+  animation: reflection 6s ease-in-out infinite;
+}
+
+@media (max-width: 1023px) {
+  .art { width: 160%; max-width: none; }
+  .scene::after {
+    background: linear-gradient(180deg, #fffcf4 0%, rgb(255 252 244 / 96%) 45%, rgb(255 252 244 / 35%) 62%, transparent 75%);
+  }
+}
+
+@media (max-width: 639px) {
+  .art { width: 215%; }
+}
+
+@keyframes wave {
+  0%, 12%, 70%, 100% { transform: rotate(-6deg); }
+  23%, 45% { transform: rotate(16deg); }
+  34%, 56% { transform: rotate(-12deg); }
+}
+
+@keyframes beam {
+  0%, 100% { transform: rotate(-8deg) scaleY(.85); opacity: .5; }
+  50% { transform: rotate(12deg) scaleY(1.15); opacity: .85; }
+}
+
+@keyframes cloud {
+  0%, 100% { transform: translateX(-7px); }
+  50% { transform: translateX(9px); }
+}
+
+@keyframes water {
+  0%, 100% { transform: translateX(-7px); }
+  50% { transform: translateX(7px); }
+}
+
+@keyframes reflection {
+  0%, 100% { opacity: .35; }
+  50% { opacity: .7; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .art * { animation: none !important; }
+}

@@ -8,9 +8,14 @@ import styles from "./HomeIntro.module.css";
 const clamp = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const easeIO = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
-// Module-level flag: persists across client-side navigations but resets on a
-// full page load. So the intro + welcome modal play on refresh / first visit,
-// not every time the user clicks back to Home.
+const WELCOME_SEEN_KEY = "lighthouse:welcome-seen";
+let welcomeSeen = false;
+function hasSeenWelcome() {
+  try { return welcomeSeen || localStorage.getItem(WELCOME_SEEN_KEY) === "1"; }
+  catch { return welcomeSeen; }
+}
+
+// In-memory fallback for client navigation when browser storage is unavailable.
 let introSeen = false;
 
 /**
@@ -43,6 +48,9 @@ export function HomeIntro() {
   };
 
   const showWelcome = useCallback(() => {
+    if (hasSeenWelcome()) return;
+    welcomeSeen = true;
+    try { localStorage.setItem(WELCOME_SEEN_KEY, "1"); } catch { /* Storage may be blocked. */ }
     setWelcomeState("show");
     requestAnimationFrame(() =>
       requestAnimationFrame(() => setWelcomeState("in"))
@@ -84,8 +92,8 @@ export function HomeIntro() {
   }, [finish]);
 
   useEffect(() => {
-    // Already played in this page-load session (client nav back to Home) → skip.
-    if (introSeen && !playedRef.current) {
+    // Skip returning visitors, including after a refresh or browser restart.
+    if ((hasSeenWelcome() || introSeen) && !playedRef.current) {
       setShowPortal(false);
       return;
     }
